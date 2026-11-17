@@ -26,7 +26,7 @@ export const COUPON_CATALOG = [
   {
     id: 'brownie',
     title: 'Vale por un Brownie la próxima vez que nos veamos',
-    note: 'Recién hecho y con mucho amor.',
+    note: 'Te prometo que estará rico.',
     emoji: '🍫',
     price: 2,
     goal: { type: 'totalPomodoros', value: 2 },
@@ -42,7 +42,7 @@ export const COUPON_CATALOG = [
   {
     id: 'platos',
     title: 'Hoy yo lavo los platos',
-    note: 'Válido la próxima vez que comamos juntos.',
+    note: 'Válido la próxima vez que cocinemos algo juntos.',
     emoji: '🍽️',
     price: 4,
     goal: { type: 'dailyStreak', value: 3 },
@@ -50,7 +50,7 @@ export const COUPON_CATALOG = [
   {
     id: 'masaje',
     title: 'Vale por un masaje de espalda',
-    note: '15 minutos, sin quejas de la masajista.',
+    note: '15 minutos, sin quejas de la masajista i promise.',
     emoji: '💆',
     price: 5,
     goal: { type: 'arcadeScore', value: 400 },
@@ -58,7 +58,7 @@ export const COUPON_CATALOG = [
   {
     id: 'favor-absoluto',
     title: 'El Favor Absoluto (Úsalo cuando quieras)',
-    note: 'Lo que pidas. Sin preguntas. Úsalo con sabiduría.',
+    note: 'Lo que pidas. Sin preguntas. Úsalo con sabiduría y ten cuidado de desperdiciarlo.',
     emoji: '👑',
     price: 10,
     goal: { type: 'legend', value: { pomodoros: 12, arcade: 700 } },
