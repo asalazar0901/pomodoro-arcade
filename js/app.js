@@ -1,0 +1,352 @@
+/* =====================================================================
+   app.js — Controlador principal y UI.
+   Conecta el temporizador, la tienda y los minijuegos.
+   ===================================================================== */
+
+import { store } from './store.js';
+import { PomodoroTimer, formatTime } from './timer.js';
+import { WordSearch, WORD_MAPS } from './wordsearch.js';
+import { ArcadeGame, ARCADE_TICKET_SCORE } from './arcade.js';
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => [...document.querySelectorAll(sel)];
+
+/* ---------------------------------------------------------------------
+   Utilidades de UI
+   --------------------------------------------------------------------- */
+function toast(text, ms = 3200) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = text;
+  $('#toasts').appendChild(el);
+  setTimeout(() => el.remove(), ms);
+}
+
+/* Sonidito 8-bit con WebAudio (sin archivos de audio). */
+let audioCtx = null;
+function beep(notes = [660, 880, 1320]) {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    notes.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = freq;
+      const t0 = audioCtx.currentTime + i * 0.14;
+      gain.gain.setValueAtTime(0.08, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.13);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.14);
+    });
+  } catch { /* sin audio: no pasa nada */ }
+}
+
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const formatDate = (iso) => new Date(iso).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' });
+
+/* ---------------------------------------------------------------------
+   Navegación entre vistas
+   --------------------------------------------------------------------- */
+let currentView = 'timer';
+function showView(name) {
+  currentView = name;
+  $$('.view').forEach((v) => v.classList.toggle('is-active', v.id === `view-${name}`));
+  $$('.tab').forEach((t) => t.classList.toggle('is-active', t.dataset.view === name));
+  if (name !== 'games') leaveArcade(); // el arcade no corre en segundo plano
+  if (name === 'games' && isBreak()) showGameMenu();
+  window.scrollTo({ top: 0 });
+}
+$$('.tab').forEach((t) => t.addEventListener('click', () => showView(t.dataset.view)));
+$$('[data-goto]').forEach((b) => b.addEventListener('click', () => showView(b.dataset.goto)));
+
+/* ---------------------------------------------------------------------
+   Temporizador
+   --------------------------------------------------------------------- */
+// Premios ya cobrados en el descanso actual (máx. 1 ticket por juego y descanso)
+let breakRewards = { apodos: false, carino: false, arcade: false };
+const isBreak = () => timer.mode === 'break';
+
+const timer = new PomodoroTimer({
+  onTick({ mode, remainingMs, totalMs, running }) {
+    const text = formatTime(remainingMs);
+    $('#clock').textContent = text;
+    $('#break-left').textContent = text;
+    $('#progress-fill').style.width = `${100 * (1 - remainingMs / totalMs)}%`;
+    $('#btn-start').textContent = running ? '⏸ Pausar' : '▶ Iniciar';
+    $('#walker').classList.toggle('is-walking', running);
+    document.title = `${text} · ${mode === 'work' ? 'Foco' : 'Descanso'} · Pomodoro Arcade`;
+  },
+
+  onPhaseEnd(finished) {
+    if (finished === 'work') {
+      store.recordPomodoro();
+      beep([660, 880, 1320]);
+      toast('¡Bloque terminado! +1 🎟️. Empieza tu descanso: los minijuegos están abiertos.', 5000);
+    } else {
+      beep([880, 660, 440]);
+      toast('Se acabó el descanso. Pulsa «Iniciar» para el siguiente bloque.', 5000);
+    }
+  },
+
+  onModeChange(mode) {
+    const onBreak = mode === 'break';
+    $('#timer-panel').dataset.mode = mode;
+    $('#mode-label').textContent = onBreak ? 'Descanso' : 'Modo concentración';
+    $('#btn-skip').hidden = !onBreak;
+    $('#btn-go-games').hidden = !onBreak;
+    $('#games-lock').hidden = onBreak;
+    $('#games-locked').hidden = onBreak;
+    $('#games-open').hidden = !onBreak;
+
+    if (onBreak) {
+      breakRewards = { apodos: false, carino: false, arcade: false };
+      updateGameCards();
+      showGameMenu();
+    } else {
+      // Fin del descanso: se cierran los juegos
+      leaveArcade();
+      $('#phrase').textContent = 'Pulsa «Iniciar» cuando estés listo para el siguiente bloque.';
+      if (currentView === 'games') showView('timer');
+    }
+  },
+
+  onPhrase(text) {
+    const el = $('#phrase');
+    el.textContent = text;
+    el.classList.remove('swap');
+    void el.offsetWidth; // reinicia la animación
+    el.classList.add('swap');
+  },
+});
+
+$('#btn-start').addEventListener('click', () => { beep([520]); timer.toggle(); });
+$('#btn-reset').addEventListener('click', () => timer.reset());
+$('#btn-skip').addEventListener('click', () => timer.skipBreak());
+$('#btn-go-games').addEventListener('click', () => showView('games'));
+
+/* ---------------------------------------------------------------------
+   Minijuegos
+   --------------------------------------------------------------------- */
+function showGameMenu() {
+  leaveArcade();
+  $('#game-menu').hidden = false;
+  $('#game-wordsearch').hidden = true;
+  $('#game-arcade').hidden = true;
+  updateGameCards();
+}
+
+function updateGameCards() {
+  $('[data-game="ws-apodos"]').classList.toggle('done', breakRewards.apodos);
+  $('[data-game="ws-carino"]').classList.toggle('done', breakRewards.carino);
+  $('[data-game="arcade"]').classList.toggle('done', breakRewards.arcade);
+}
+
+$$('.arcade-goal').forEach((el) => { el.textContent = ARCADE_TICKET_SCORE; });
+$$('[data-back]').forEach((b) => b.addEventListener('click', showGameMenu));
+
+$$('.game-card').forEach((card) => card.addEventListener('click', () => {
+  if (!isBreak()) return; // seguridad: solo en descansos
+  const game = card.dataset.game;
+  $('#game-menu').hidden = true;
+  if (game === 'arcade') {
+    $('#game-arcade').hidden = false;
+    showArcadeOverlay('Arcade de supervivencia', `Recoge snacks y esquiva a los jefes. A los ${ARCADE_TICKET_SCORE} puntos ganas 1 🎟️.`, '▶ Jugar');
+  } else {
+    $('#game-wordsearch').hidden = false;
+    wordsearch.load(game === 'ws-apodos' ? 'apodos' : 'carino');
+  }
+}));
+
+/* ---- Sopa de letras ---- */
+const wordsearch = new WordSearch(
+  { grid: $('#ws-grid'), words: $('#ws-words'), msg: $('#ws-msg'), title: $('#ws-title') },
+  {
+    onWordFound() { beep([880]); },
+    onComplete(mapId) {
+      store.recordMapDone(mapId);
+      beep([660, 880, 1100, 1320]);
+      if (isBreak() && !breakRewards[mapId]) {
+        breakRewards[mapId] = true;
+        store.addTickets(1);
+        $('#ws-msg').textContent = `¡${WORD_MAPS[mapId].title} completado! +1 🎟️`;
+        toast('¡Sopa de letras completada! +1 🎟️');
+      } else {
+        $('#ws-msg').textContent = '¡Completado! (El ticket de este mapa ya lo cobraste en este descanso.)';
+      }
+      updateGameCards();
+    },
+  },
+);
+$('#ws-new').addEventListener('click', () => wordsearch.load());
+
+/* ---- Arcade ---- */
+function showArcadeOverlay(title, text, button) {
+  $('#overlay-title').textContent = title;
+  $('#overlay-text').textContent = text;
+  $('#arcade-play').textContent = button;
+  $('#arcade-overlay').hidden = false;
+}
+
+const arcade = new ArcadeGame($('#arcade-canvas'), {
+  onHud(score, lives) {
+    $('#hud-score').textContent = score;
+    $('#hud-lives').textContent = '❤'.repeat(Math.max(0, lives)) || '✖';
+  },
+  onTicketGoal() {
+    if (isBreak() && !breakRewards.arcade) {
+      breakRewards.arcade = true;
+      store.addTickets(1);
+      beep([660, 880, 1100, 1320]);
+      toast(`¡${ARCADE_TICKET_SCORE} puntos! +1 🎟️`);
+      updateGameCards();
+    }
+  },
+  onGameOver(score) {
+    const record = store.recordArcadeScore(score);
+    beep([440, 330, 220]);
+    showArcadeOverlay(
+      record ? '¡Nuevo récord!' : 'Game over',
+      `Hiciste ${score} puntos.${record ? ' Tu mejor marca hasta ahora.' : ''}`,
+      '↻ Otra vez',
+    );
+  },
+});
+
+/** Detiene el arcade; si había partida en curso, guarda su puntaje como posible récord. */
+function leaveArcade() {
+  if (arcade.running && arcade.score > 0) store.recordArcadeScore(arcade.score);
+  arcade.stop();
+}
+
+function startArcade() {
+  if (!isBreak()) return;
+  $('#arcade-overlay').hidden = true;
+  arcade.start();
+  $('#arcade-canvas').scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+$('#arcade-play').addEventListener('click', startArcade);
+$('#arcade-restart').addEventListener('click', () => {
+  leaveArcade(); // guarda el récord de la partida en curso antes de reiniciar
+  startArcade();
+});
+
+// Cruceta táctil
+$$('.dpad-btn').forEach((btn) => {
+  const set = (pressed) => (e) => {
+    e.preventDefault();
+    btn.classList.toggle('is-down', pressed);
+    arcade.setDir(btn.dataset.dir, pressed);
+  };
+  btn.addEventListener('pointerdown', set(true));
+  btn.addEventListener('pointerup', set(false));
+  btn.addEventListener('pointercancel', set(false));
+  btn.addEventListener('pointerleave', set(false));
+  btn.addEventListener('contextmenu', (e) => e.preventDefault());
+});
+
+/* ---------------------------------------------------------------------
+   Tienda y cupones
+   --------------------------------------------------------------------- */
+function renderShop() {
+  const grid = $('#shop-grid');
+  grid.innerHTML = store.catalog.map((c) => {
+    const { goal, enoughTickets, ok } = store.canBuy(c);
+    const progress = goal.target > 1 ? ` (${goal.current}/${goal.target})` : '';
+    return `
+      <article class="coupon ${goal.done ? '' : 'is-locked'}">
+        <div class="coupon-top">
+          <span class="emoji" aria-hidden="true">${escapeHtml(c.emoji)}</span>
+          <h3>${escapeHtml(c.title)}</h3>
+        </div>
+        <p class="note">${escapeHtml(c.note)}</p>
+        <p class="req ${goal.done ? 'ok' : 'no'}"><span>${goal.done ? '✔' : '🔒'}</span><span>Misión: ${escapeHtml(goal.label)}${progress}</span></p>
+        <p class="req ${enoughTickets ? 'ok' : 'no'}"><span>${enoughTickets ? '✔' : '✖'}</span><span class="price">${c.price} 🎟️</span></p>
+        <button class="btn btn-primary" type="button" data-buy="${escapeHtml(c.id)}" ${ok ? '' : 'disabled'}>
+          ${ok ? 'Canjear' : goal.done ? 'Faltan tickets' : 'Bloqueado'}
+        </button>
+      </article>`;
+  }).join('');
+}
+
+function renderOwned() {
+  const owned = store.state.owned;
+  $('#owned-empty').hidden = owned.length > 0;
+  $('#owned-grid').innerHTML = owned.map((o) => `
+    <article class="coupon ${o.redeemed ? 'is-redeemed' : ''}">
+      <div class="coupon-top">
+        <span class="emoji" aria-hidden="true">${escapeHtml(o.emoji)}</span>
+        <h3>${escapeHtml(o.title)}</h3>
+      </div>
+      <p class="code">${escapeHtml(o.code)} · ${formatDate(o.date)} · ${o.redeemed ? 'Canjeado' : 'Disponible'}</p>
+      <button class="btn btn-brown" type="button" data-open="${escapeHtml(o.code)}">📸 Ver cupón</button>
+    </article>`).join('');
+}
+
+function renderStats() {
+  const { tickets, stats } = store.state;
+  const counter = $('#ticket-count');
+  if (counter.textContent !== String(tickets)) {
+    counter.textContent = tickets;
+    const wallet = counter.parentElement;
+    wallet.classList.remove('bump');
+    void wallet.offsetWidth;
+    wallet.classList.add('bump');
+  }
+  $('#stat-today').textContent = stats.today;
+  $('#stat-total').textContent = stats.totalPomodoros;
+  $('#stat-arcade').textContent = stats.bestArcade;
+  $('#hud-best').textContent = stats.bestArcade;
+}
+
+$('#shop-grid').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-buy]');
+  if (!btn) return;
+  const owned = store.buy(btn.dataset.buy);
+  if (!owned) return;
+  beep([660, 990, 1320]);
+  openCoupon(owned.code);
+});
+
+$('#owned-grid').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-open]');
+  if (btn) openCoupon(btn.dataset.open);
+});
+
+/* ---- Modal del cupón (pensado para captura de pantalla) ---- */
+let openCode = null;
+function openCoupon(code) {
+  const o = store.state.owned.find((x) => x.code === code);
+  if (!o) return;
+  openCode = code;
+  $('#coupon-modal-emoji').textContent = o.emoji;
+  $('#coupon-modal-title').textContent = o.title;
+  $('#coupon-modal-note').textContent = o.note;
+  $('#coupon-modal-code').textContent = o.code;
+  $('#coupon-modal-date').textContent = formatDate(o.date);
+  const status = $('#coupon-modal-status');
+  status.textContent = o.redeemed ? '✖ YA CANJEADO' : '✔ VÁLIDO';
+  status.classList.toggle('used', o.redeemed);
+  $('#coupon-redeem').hidden = o.redeemed;
+  $('#coupon-modal').hidden = false;
+}
+function closeCoupon() { $('#coupon-modal').hidden = true; openCode = null; }
+
+$('#coupon-close').addEventListener('click', closeCoupon);
+$('#coupon-modal').addEventListener('click', (e) => { if (e.target.id === 'coupon-modal') closeCoupon(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCoupon(); });
+$('#coupon-redeem').addEventListener('click', () => {
+  if (!openCode) return;
+  if (!confirm('¿Marcar este cupón como canjeado? Hazlo cuando ya te lo hayan pagado.')) return;
+  const code = openCode;
+  store.redeem(code);
+  openCoupon(code);
+});
+
+/* ---------------------------------------------------------------------
+   Arranque
+   --------------------------------------------------------------------- */
+store.subscribe(() => { renderStats(); renderShop(); renderOwned(); });
+await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo
+timer.refresh();      // pinta el reloj y restaura el estado si se recargó la página

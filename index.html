@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#14213d" />
+  <meta name="description" content="Pomodoro gamificado con minijuegos y cupones. Hecho con amor para mi ingeniero favorito." />
+  <title>Pomodoro Arcade</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%2314213d'/><rect x='3' y='5' width='10' height='8' fill='%23c0392b'/><rect x='6' y='3' width='4' height='2' fill='%233fa34d'/><rect x='5' y='7' width='2' height='2' fill='%23fff'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- ============================ CABECERA ============================ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">🍅</span>
+      <h1>Pomodoro Arcade</h1>
+    </div>
+    <div class="wallet" title="Tickets disponibles" aria-live="polite">
+      <span class="ticket-icon" aria-hidden="true">🎟️</span>
+      <span id="ticket-count">0</span>
+    </div>
+  </header>
+
+  <!-- ============================ NAVEGACIÓN ============================ -->
+  <nav class="tabs" aria-label="Secciones">
+    <button class="tab is-active" data-view="timer" type="button">⏱ Pomodoro</button>
+    <button class="tab" data-view="games" type="button">
+      🕹 Minijuegos <span id="games-lock" class="lock" aria-hidden="true">🔒</span>
+    </button>
+    <button class="tab" data-view="shop" type="button">🛒 Tienda</button>
+  </nav>
+
+  <main>
+    <!-- ====================== VISTA 1: TEMPORIZADOR ====================== -->
+    <section id="view-timer" class="view is-active" aria-labelledby="timer-title">
+      <div class="panel timer-panel" id="timer-panel" data-mode="work">
+        <h2 id="timer-title" class="mode-label"><span id="mode-label">Modo concentración</span></h2>
+
+        <div class="timer-stage">
+          <!-- Sprite animado del ingeniero (se anima mientras corre el reloj) -->
+          <div class="walker" id="walker" aria-hidden="true"></div>
+          <div class="clock" id="clock" role="timer" aria-live="off">25:00</div>
+        </div>
+
+        <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+
+        <p class="phrase" id="phrase" aria-live="polite">Pulsa «Iniciar» y a darle, ingeniero.</p>
+
+        <div class="controls">
+          <button id="btn-start" class="btn btn-primary" type="button">▶ Iniciar</button>
+          <button id="btn-reset" class="btn btn-ghost" type="button">↺ Reiniciar</button>
+          <button id="btn-skip" class="btn btn-ghost" type="button" hidden>⏭ Terminar descanso</button>
+        </div>
+
+        <button id="btn-go-games" class="btn btn-brown btn-wide" type="button" hidden>🕹 ¡Descanso! Jugar minijuegos</button>
+      </div>
+
+      <div class="panel stats-panel">
+        <h3>Tu progreso</h3>
+        <ul class="stats">
+          <li><span class="stat-num" id="stat-today">0</span><span class="stat-label">Pomodoros hoy</span></li>
+          <li><span class="stat-num" id="stat-total">0</span><span class="stat-label">Pomodoros totales</span></li>
+          <li><span class="stat-num" id="stat-arcade">0</span><span class="stat-label">Récord arcade</span></li>
+        </ul>
+        <p class="hint">Cada bloque de 25 min completo = 1 🎟️. En el descanso de 10 min se abren los minijuegos para ganar tickets extra.</p>
+      </div>
+    </section>
+
+    <!-- ====================== VISTA 2: MINIJUEGOS ====================== -->
+    <section id="view-games" class="view" aria-labelledby="games-title">
+      <h2 id="games-title" class="section-title">Zona de minijuegos</h2>
+
+      <!-- Bloqueo: solo se juega en los descansos -->
+      <div class="panel locked-panel" id="games-locked">
+        <div class="locked-icon" aria-hidden="true">🔒</div>
+        <p><strong>Zona cerrada por estudio.</strong></p>
+        <p>Los minijuegos solo se abren durante el descanso. Termina tu bloque de 25 minutos y vuelve por aquí.</p>
+        <button class="btn btn-primary" type="button" data-goto="timer">Volver al Pomodoro</button>
+      </div>
+
+      <div id="games-open" hidden>
+        <p class="break-banner">Descanso en curso: <strong id="break-left">10:00</strong></p>
+
+        <!-- Menú de juegos -->
+        <div class="game-menu" id="game-menu">
+          <button class="game-card" type="button" data-game="ws-apodos">
+            <span class="game-emoji" aria-hidden="true">🔤</span>
+            <span class="game-name">Sopa de letras</span>
+            <span class="game-desc">Mapa 1: Apodos</span>
+            <span class="game-reward">+1 🎟️ al completarla</span>
+          </button>
+          <button class="game-card" type="button" data-game="ws-carino">
+            <span class="game-emoji" aria-hidden="true">💙</span>
+            <span class="game-name">Sopa de letras</span>
+            <span class="game-desc">Mapa 2: Cariño</span>
+            <span class="game-reward">+1 🎟️ al completarla</span>
+          </button>
+          <button class="game-card" type="button" data-game="arcade">
+            <span class="game-emoji" aria-hidden="true">👷</span>
+            <span class="game-name">Arcade de supervivencia</span>
+            <span class="game-desc">Snacks, jefes y caldo de mamá</span>
+            <span class="game-reward">+1 🎟️ al llegar a <span class="arcade-goal">300</span> pts</span>
+          </button>
+        </div>
+
+        <!-- Minijuego 1: Sopa de letras -->
+        <div class="panel game-panel" id="game-wordsearch" hidden>
+          <div class="game-head">
+            <button class="btn btn-ghost btn-small" type="button" data-back>← Juegos</button>
+            <h3 id="ws-title">Sopa de letras</h3>
+            <button class="btn btn-ghost btn-small" type="button" id="ws-new">↻ Nueva</button>
+          </div>
+          <p class="hint">Arrastra sobre las letras, o toca la primera y la última letra de la palabra.</p>
+          <div class="ws-grid" id="ws-grid" aria-label="Sopa de letras"></div>
+          <ul class="ws-words" id="ws-words"></ul>
+          <p class="game-msg" id="ws-msg" aria-live="polite"></p>
+        </div>
+
+        <!-- Minijuego 2: Arcade (Canvas) -->
+        <div class="panel game-panel" id="game-arcade" hidden>
+          <div class="game-head">
+            <button class="btn btn-ghost btn-small" type="button" data-back>← Juegos</button>
+            <h3>Arcade</h3>
+            <button class="btn btn-ghost btn-small" type="button" id="arcade-restart">↻ Reiniciar</button>
+          </div>
+          <div class="hud">
+            <span>Puntos <strong id="hud-score">0</strong></span>
+            <span>Vidas <strong id="hud-lives">❤❤❤</strong></span>
+            <span>Récord <strong id="hud-best">0</strong></span>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="arcade-canvas" width="480" height="480" aria-label="Juego arcade"></canvas>
+            <div class="canvas-overlay" id="arcade-overlay">
+              <p class="overlay-title" id="overlay-title">Arcade de supervivencia</p>
+              <p class="overlay-text" id="overlay-text">Recoge snacks, esquiva a Homelander, Darth Vader y Valery Salov.</p>
+              <button class="btn btn-primary" type="button" id="arcade-play">▶ Jugar</button>
+            </div>
+          </div>
+          <!-- Controles táctiles -->
+          <div class="dpad" id="dpad" aria-label="Controles táctiles">
+            <button type="button" class="dpad-btn up" data-dir="up" aria-label="Arriba">▲</button>
+            <button type="button" class="dpad-btn left" data-dir="left" aria-label="Izquierda">◀</button>
+            <button type="button" class="dpad-btn right" data-dir="right" aria-label="Derecha">▶</button>
+            <button type="button" class="dpad-btn down" data-dir="down" aria-label="Abajo">▼</button>
+          </div>
+          <ul class="legend">
+            <li>🍬 Skittles 10 · Gomitas 20 · Brazy Puffs 30</li>
+            <li>🥫 Red Bull Green Edition: supervelocidad</li>
+            <li>🍲 Caldo de mamá: invencible 5 s</li>
+            <li>⬜ Estereofón te frena · 🎃 Zapallo es un bloque sólido</li>
+            <li>⌨ Flechas o WASD · 📱 cruceta en pantalla</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== VISTA 3: TIENDA ====================== -->
+    <section id="view-shop" class="view" aria-labelledby="shop-title">
+      <h2 id="shop-title" class="section-title">Tienda de cupones</h2>
+      <p class="hint center">Cada cupón pide tickets <em>y</em> una misión cumplida. Cuando lo compres, hazle captura y mándasela a tu novia para cobrarlo.</p>
+
+      <!-- El catálogo se renderiza desde js/store.js (COUPON_CATALOG) -->
+      <div class="shop-grid" id="shop-grid"></div>
+
+      <h2 class="section-title">Mis cupones</h2>
+      <div class="owned-grid" id="owned-grid"></div>
+      <p class="hint center" id="owned-empty">Todavía no tienes cupones. ¡A estudiar se ha dicho!</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Hecho con 💙 y ☕ para mi ingeniero favorito.</p>
+  </footer>
+
+  <!-- ================== MODAL: CUPÓN PARA CAPTURA DE PANTALLA ================== -->
+  <div class="modal" id="coupon-modal" hidden role="dialog" aria-modal="true" aria-labelledby="coupon-modal-title">
+    <div class="modal-inner">
+      <div class="coupon-big" id="coupon-big">
+        <p class="coupon-kicker">★ VALE OFICIAL ★</p>
+        <div class="coupon-emoji" id="coupon-modal-emoji">🎁</div>
+        <h3 id="coupon-modal-title">Cupón</h3>
+        <p class="coupon-note" id="coupon-modal-note"></p>
+        <div class="coupon-meta">
+          <span>Código: <strong id="coupon-modal-code"></strong></span>
+          <span>Ganado: <strong id="coupon-modal-date"></strong></span>
+        </div>
+        <p class="coupon-status" id="coupon-modal-status"></p>
+        <p class="coupon-foot">Válido solo con tu novia. No transferible. Se cobra con besito.</p>
+      </div>
+      <p class="hint center light">📸 Haz captura de pantalla y envíasela para canjearlo.</p>
+      <div class="controls">
+        <button class="btn btn-brown" type="button" id="coupon-redeem">✔ Marcar como canjeado</button>
+        <button class="btn btn-ghost light" type="button" id="coupon-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

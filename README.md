@@ -1,0 +1,76 @@
+# 🍅 Pomodoro Arcade
+
+Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en HTML, CSS y JavaScript puro (sin dependencias ni build), listo para Vercel.
+
+## Qué incluye
+
+- **Pomodoro 25/10** con frases motivacionales. Cada bloque de 25 min completo da 1 🎟️.
+- **Minijuegos solo en el descanso**:
+  - Sopa de letras con generador automático (Mapa 1: Apodos, Mapa 2: Cariño). Completarla da +1 🎟️.
+  - Arcade de supervivencia en Canvas. Llegar a 300 puntos da +1 🎟️.
+  - Máximo 1 ticket por juego en cada descanso.
+- **Tienda de cupones**: cada cupón pide tickets **y** una misión cumplida. Al canjearlo se abre una tarjeta lista para captura de pantalla.
+- Todo el progreso se guarda en el navegador (`localStorage`).
+
+### Cupones y misiones
+
+| Cupón | Precio | Misión |
+|---|---|---|
+| Brownie | 2 🎟️ | 2 pomodoros en total |
+| 30 min de Before Sunset | 3 🎟️ | Completar la sopa de letras del Mapa 2 (Cariño) |
+| Hoy yo lavo los platos | 4 🎟️ | Racha de 3 pomodoros en un mismo día |
+| Masaje de espalda | 5 🎟️ | 400 puntos en el arcade |
+| El Favor Absoluto | 10 🎟️ | 12 pomodoros, 700 pts en arcade y las dos sopas de letras |
+
+Para cambiar premios, precios o misiones edita el array `COUPON_CATALOG` en `js/store.js`.
+
+## Estructura
+
+```
+index.html
+css/styles.css
+js/app.js          Controlador principal y UI
+js/timer.js        Pomodoro y frases
+js/store.js        Tickets, cupones y misiones
+js/wordsearch.js   Sopa de letras
+js/arcade.js       Arcade en Canvas
+assets/            Sprites
+```
+
+## Publicar en Vercel
+
+1. Entra a <https://vercel.com/new> con tu cuenta.
+2. En **Import Git Repository** elige este repositorio. Si no aparece, pulsa **Adjust GitHub App Permissions** y dale acceso.
+3. En **Framework Preset** deja **Other**. No hace falta comando de build ni carpeta de salida.
+4. Pulsa **Deploy**. En menos de un minuto tendrás la URL para compartir.
+
+Cada vez que se suba un cambio a `main`, Vercel vuelve a publicar solo.
+
+## Probar en tu computadora
+
+Los módulos de JavaScript necesitan un servidor local (abrir el archivo con doble clic no funciona):
+
+```bash
+npx serve .
+# o
+python3 -m http.server 8000
+```
+
+**Modo demo:** agrega `?demo=1` a la URL y el bloque de trabajo dura 25 segundos y el descanso 60, para probar todo sin esperar.
+
+## Poner tus sprites
+
+1. Guarda cada PNG con fondo transparente en `assets/`.
+2. Abre `js/arcade.js` y busca el bloque `SPRITES` al inicio. Cambia `src: null` por la ruta de tu imagen, por ejemplo:
+
+```js
+homelander: { src: 'assets/homelander_v5.2.png', frames: 1, size: 44 },
+```
+
+Si la imagen es una tira horizontal de animación, pon en `frames` cuántos cuadros trae. Mientras `src` sea `null` el juego dibuja un placeholder en pixel art.
+
+El ingeniero (`assets/ingeniero_v5.2.png`) y el zombi (`assets/zombi_v5.2.png`) ya están puestos. El ingeniero del reloj se cambia en `css/styles.css`, clase `.walker`.
+
+## Conectar Google Sheets o Firebase más adelante
+
+La función `loadCatalog()` en `js/store.js` es el único punto que hay que tocar: hoy devuelve el array local y trae comentado un ejemplo de `fetch` para Sheets y otro para Firebase.
