@@ -40,6 +40,12 @@
       <div class="panel timer-panel" id="timer-panel" data-mode="work">
         <h2 id="timer-title" class="mode-label"><span id="mode-label">Modo concentración</span></h2>
 
+        <!-- Qué está estudiando en este bloque (se elige de los temarios) -->
+        <label class="focus-pick">
+          <span>Estudiando ahora:</span>
+          <select id="focus-select" aria-label="Tema que estás estudiando"></select>
+        </label>
+
         <div class="timer-stage">
           <!-- Sprite animado del ingeniero (se anima mientras corre el reloj) -->
           <div class="walker" id="walker" aria-hidden="true"></div>
@@ -57,6 +63,19 @@
         </div>
 
         <button id="btn-go-games" class="btn btn-brown btn-wide" type="button" hidden>🕹 ¡Descanso! Jugar minijuegos</button>
+      </div>
+
+      <!-- ============ TEMARIOS DE EXAMEN (materias y temas) ============ -->
+      <div class="panel syllabus-panel" aria-labelledby="syllabus-title">
+        <h3 id="syllabus-title">Temarios de examen</h3>
+        <p class="hint">Agrega una materia, anota sus temas y márcalos cuando ya los hayas estudiado. Pulsa 🎯 para ponerlo como tema del Pomodoro.</p>
+        <form class="add-row" id="subject-form" autocomplete="off">
+          <input type="text" id="subject-input" maxlength="40" placeholder="Nueva materia (ej. Cálculo)" aria-label="Nombre de la materia" />
+          <button class="btn btn-primary btn-small" type="submit">+ Materia</button>
+        </form>
+        <!-- Las materias se renderizan desde js/syllabus.js -->
+        <div id="subject-list"></div>
+        <p class="hint center" id="subject-empty">Aún no hay materias. Empieza con la del próximo examen.</p>
       </div>
 
       <div class="panel stats-panel">

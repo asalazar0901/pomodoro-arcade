@@ -144,7 +144,13 @@ const DEFAULT_STATE = () => ({
     mapsDone: { apodos: 0, carino: 0 }, // veces completado cada mapa
   },
   owned: [], // cupones comprados: { code, couponId, title, note, emoji, date, redeemed }
+  // Temarios: materias con su lista de temas
+  //   { id, name, topics: [{ id, name, done, pomodoros }] }
+  subjects: [],
+  focus: null, // tema que se está estudiando: { subjectId, topicId }
 });
+
+const newId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 class Store {
   constructor() {
@@ -165,6 +171,7 @@ class Store {
         ...raw,
         stats: { ...base.stats, ...raw.stats, mapsDone: { ...base.stats.mapsDone, ...(raw.stats?.mapsDone || {}) } },
         owned: Array.isArray(raw.owned) ? raw.owned : [],
+        subjects: Array.isArray(raw.subjects) ? raw.subjects : [],
       };
     } catch {
       return base;
@@ -213,6 +220,8 @@ class Store {
     s.today += 1;
     s.bestDaily = Math.max(s.bestDaily, s.today);
     this.state.tickets += 1; // 1 ticket por bloque de 25 min
+    const topic = this.focusedTopic()?.topic;
+    if (topic) topic.pomodoros = (topic.pomodoros || 0) + 1; // el bloque cuenta para el tema elegido
     this.#save();
   }
 
@@ -261,6 +270,64 @@ class Store {
     this.state.owned.unshift(owned);
     this.#save();
     return owned;
+  }
+
+  /* ---------- temarios (materias y temas) ---------- */
+  get subjects() { return this.state.subjects; }
+
+  addSubject(name) {
+    name = name.trim();
+    if (!name) return null;
+    const subject = { id: newId(), name, topics: [] };
+    this.state.subjects.push(subject);
+    this.#save();
+    return subject;
+  }
+
+  removeSubject(subjectId) {
+    this.state.subjects = this.state.subjects.filter((s) => s.id !== subjectId);
+    if (this.state.focus?.subjectId === subjectId) this.state.focus = null;
+    this.#save();
+  }
+
+  addTopic(subjectId, name) {
+    name = name.trim();
+    const subject = this.state.subjects.find((s) => s.id === subjectId);
+    if (!subject || !name) return null;
+    const topic = { id: newId(), name, done: false, pomodoros: 0 };
+    subject.topics.push(topic);
+    this.#save();
+    return topic;
+  }
+
+  removeTopic(subjectId, topicId) {
+    const subject = this.state.subjects.find((s) => s.id === subjectId);
+    if (!subject) return;
+    subject.topics = subject.topics.filter((t) => t.id !== topicId);
+    if (this.state.focus?.topicId === topicId) this.state.focus = null;
+    this.#save();
+  }
+
+  toggleTopic(subjectId, topicId, done) {
+    const topic = this.state.subjects.find((s) => s.id === subjectId)?.topics.find((t) => t.id === topicId);
+    if (!topic) return;
+    topic.done = done ?? !topic.done;
+    this.#save();
+  }
+
+  /** Elige el tema que se estudia en el Pomodoro. Sin argumentos lo quita. */
+  setFocus(subjectId = null, topicId = null) {
+    this.state.focus = subjectId && topicId ? { subjectId, topicId } : null;
+    this.#save();
+  }
+
+  /** Devuelve { subject, topic } del tema elegido, o null. */
+  focusedTopic() {
+    const f = this.state.focus;
+    if (!f) return null;
+    const subject = this.state.subjects.find((s) => s.id === f.subjectId);
+    const topic = subject?.topics.find((t) => t.id === f.topicId);
+    return topic ? { subject, topic } : null;
   }
 
   redeem(code) {

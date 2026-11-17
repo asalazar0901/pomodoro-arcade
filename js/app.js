@@ -7,6 +7,7 @@ import { store } from './store.js';
 import { PomodoroTimer, formatTime } from './timer.js';
 import { WordSearch, WORD_MAPS } from './wordsearch.js';
 import { ArcadeGame, ARCADE_TICKET_SCORE } from './arcade.js';
+import { initSyllabus } from './syllabus.js';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -81,9 +82,11 @@ const timer = new PomodoroTimer({
 
   onPhaseEnd(finished) {
     if (finished === 'work') {
+      const studied = store.focusedTopic();
       store.recordPomodoro();
       beep([660, 880, 1320]);
       toast('¡Bloque terminado! +1 🎟️. Empieza tu descanso: los minijuegos están abiertos.', 5000);
+      if (studied) toast(`Bloque anotado en ${studied.subject.name}: ${studied.topic.name}. Si ya lo dominas, márcalo en el temario.`, 6000);
     } else {
       beep([880, 660, 440]);
       toast('Se acabó el descanso. Pulsa «Iniciar» para el siguiente bloque.', 5000);
@@ -347,6 +350,7 @@ $('#coupon-redeem').addEventListener('click', () => {
 /* ---------------------------------------------------------------------
    Arranque
    --------------------------------------------------------------------- */
-store.subscribe(() => { renderStats(); renderShop(); renderOwned(); });
+const syllabus = initSyllabus();
+store.subscribe(() => { renderStats(); renderShop(); renderOwned(); syllabus.render(); });
 await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo
 timer.refresh();      // pinta el reloj y restaura el estado si se recargó la página

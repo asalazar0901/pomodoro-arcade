@@ -5,6 +5,7 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
 ## Qué incluye
 
 - **Pomodoro 25/10** con frases motivacionales. Cada bloque de 25 min completo da 1 🎟️.
+- **Temarios de examen**: materias que se abren como carpetas, cada una con su checklist de temas. Se pueden agregar y quitar materias y temas, marcar lo ya estudiado y elegir con 🎯 qué tema se estudia en el Pomodoro. Cada bloque terminado se anota en ese tema.
 - **Minijuegos solo en el descanso**:
   - Sopa de letras con generador automático (Mapa 1: Apodos, Mapa 2: Cariño). Completarla da +1 🎟️.
   - Arcade de supervivencia en Canvas. Llegar a 300 puntos da +1 🎟️.
@@ -31,7 +32,8 @@ index.html
 css/styles.css
 js/app.js          Controlador principal y UI
 js/timer.js        Pomodoro y frases
-js/store.js        Tickets, cupones y misiones
+js/store.js        Tickets, cupones, misiones y datos de temarios
+js/syllabus.js     Temarios de examen (materias y temas)
 js/wordsearch.js   Sopa de letras
 js/arcade.js       Arcade en Canvas
 assets/            Sprites
