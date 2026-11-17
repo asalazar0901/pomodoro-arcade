@@ -37,7 +37,7 @@ export const JUEGOS = {
     { palabra: 'dipper', pista: 'Disfraz goated que no sé cómo usasaste un día' },
     { palabra: 'marshmello', pista: 'Resultado que pasaría si no hay time out' },
     { palabra: 'before sunset', pista: 'Película que te encanta' },
-    { palabra: 'brownie', pista: 'Un postre que te gusta mucho },
+    { palabra: 'brownie', pista: 'Un postre que te gusta mucho' },
     { palabra: 'estereofon', pista: 'Bloque blanco que te frena en el arcade' },
     { palabra: 'gambito de dama', pista: 'Apertura de ajedrez con nombre de serie' },
     { palabra: 'grogu', pista: 'Pequeño, verde y fan de las galletas azules' },
