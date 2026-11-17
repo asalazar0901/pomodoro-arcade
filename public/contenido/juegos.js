@@ -34,10 +34,10 @@ export const JUEGOS = {
      ------------------------------------------------------------------- */
   ahorcado: [
     { palabra: 'ornitorrinco', pista: 'El animal con el peor diseño de la naturaleza' },
-    { palabra: 'dipper', pista: 'Disfraz por un millón de dólares' },
-    { palabra: 'marshmello', pista: 'Uno de tus apodos' },
-    { palabra: 'before sunset', pista: 'Película que vale 30 minutos en la tienda' },
-    { palabra: 'brownie', pista: 'El premio más barato de la tienda' },
+    { palabra: 'dipper', pista: 'Disfraz goated que no sé cómo usasaste un día' },
+    { palabra: 'marshmello', pista: 'Resultado que pasaría si no hay time out' },
+    { palabra: 'before sunset', pista: 'Película que te encanta' },
+    { palabra: 'brownie', pista: 'Un postre que te gusta mucho },
     { palabra: 'estereofon', pista: 'Bloque blanco que te frena en el arcade' },
     { palabra: 'gambito de dama', pista: 'Apertura de ajedrez con nombre de serie' },
     { palabra: 'grogu', pista: 'Pequeño, verde y fan de las galletas azules' },
@@ -50,8 +50,8 @@ export const JUEGOS = {
      espacios. Las que no cumplan se ignoran solas.
      ------------------------------------------------------------------- */
   cosidle: [
-    'caldo', 'chess', 'grogu', 'besos', 'pasta', 'torre',
-    'reina', 'jaque', 'amigo', 'novio', 'cielo', 'mimos',
+    'cuaces', 'chess', 'grogu', 'besos', 'pasta', 'torre',
+    'reina', 'jaque', 'amigo', 'novio', 'cielo', 'cosi',
     'sushi', 'mabel', 'vader', 'sueño',
   ],
 
