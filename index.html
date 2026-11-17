@@ -205,26 +205,11 @@
         <p class="break-banner" id="free-banner" hidden>🔓 Modo libre con código. Fuera del descanso los juegos no dan tickets.</p>
 
         <!-- Menú de juegos -->
-        <div class="game-menu" id="game-menu">
-          <button class="game-card" type="button" data-game="ws-apodos">
-            <span class="game-emoji" aria-hidden="true">🔤</span>
-            <span class="game-name">Sopa de letras</span>
-            <span class="game-desc">Mapa 1: Apodos</span>
-            <span class="game-reward">+1 🎟️ al completarla</span>
-          </button>
-          <button class="game-card" type="button" data-game="ws-carino">
-            <span class="game-emoji" aria-hidden="true">💙</span>
-            <span class="game-name">Sopa de letras</span>
-            <span class="game-desc">Mapa 2: Cariño</span>
-            <span class="game-reward">+1 🎟️ al completarla</span>
-          </button>
-          <button class="game-card" type="button" data-game="arcade">
-            <span class="game-emoji" aria-hidden="true">👷</span>
-            <span class="game-name">Arcade de supervivencia</span>
-            <span class="game-desc">Snacks, jefes y caldo de mamá</span>
-            <span class="game-reward">+1 🎟️ al llegar a <span class="arcade-goal">300</span> pts</span>
-          </button>
-        </div>
+        <p class="form-msg is-error center" id="games-error" hidden></p>
+        <p class="hint center light" id="games-cap"></p>
+
+        <!-- Menú de juegos: se genera desde js/app.js con los datos de public/contenido/juegos.js -->
+        <div class="game-menu" id="game-menu"></div>
 
         <!-- Minijuego 1: Sopa de letras -->
         <div class="panel game-panel" id="game-wordsearch" hidden>
@@ -237,6 +222,17 @@
           <div class="ws-grid" id="ws-grid" aria-label="Sopa de letras"></div>
           <ul class="ws-words" id="ws-words"></ul>
           <p class="game-msg" id="ws-msg" aria-live="polite"></p>
+        </div>
+
+        <!-- Ahorcado, Cosi-dle, examen sorpresa y reto de ajedrez (js/minigames.js) -->
+        <div class="panel game-panel" id="game-mini" hidden>
+          <div class="game-head">
+            <button class="btn btn-ghost btn-small" type="button" data-back>← Juegos</button>
+            <h3 id="mini-title">Minijuego</h3>
+            <button class="btn btn-ghost btn-small" type="button" id="mini-new">↻ Nueva</button>
+          </div>
+          <div id="mini-root"></div>
+          <p class="mini-result" id="mini-result" aria-live="polite"></p>
         </div>
 
         <!-- Minijuego 2: Arcade (Canvas) -->
@@ -269,7 +265,7 @@
           <ul class="legend">
             <li>🍬 Skittles 10 · Gomitas 20 · Brazy Puffs 30</li>
             <li>🥫 Red Bull Green Edition: supervelocidad</li>
-            <li>🍲 Caldo de mamá: invencible 5 s</li>
+            <li>🍝 Plato de pasta: invencible 5 s</li>
             <li>⬜ Estereofón te frena · 🎃 Zapallo es un bloque sólido</li>
             <li>⌨ Flechas o WASD · 📱 cruceta en pantalla</li>
           </ul>

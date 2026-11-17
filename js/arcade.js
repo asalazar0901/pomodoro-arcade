@@ -18,21 +18,21 @@
 export const SPRITES = {
   // Jugador
   player:     { src: 'assets/ingeniero_v5.2.png', frames: 4, size: 52 },
-  // Enemigos
-  homelander: { src: null /* 'assets/homelander_v5.2.png' */, frames: 1, size: 44 },
-  vader:      { src: null /* 'assets/vader_v5.2.png' */,      frames: 1, size: 44 },
-  salov:      { src: null /* 'assets/salov_v5.2.png' */,      frames: 1, size: 44 },
-  zombie:     { src: 'assets/zombi_v5.2.png', frames: 4, size: 44 },
+  // Enemigos (2 cuadros de animación cada uno)
+  homelander: { src: 'assets/homelander_v2.png', frames: 2, size: 44 },
+  vader:      { src: 'assets/vader_v2.png',      frames: 2, size: 44 },
+  salov:      { src: 'assets/salov_v2.png',      frames: 2, size: 44 },
+  zombie:     { src: 'assets/zombi_v5.2.png',    frames: 4, size: 44 },
   // Coleccionables
-  skittles:   { src: null /* 'assets/skittles_v5.2.png' */,   frames: 1, size: 22 },
-  gomitas:    { src: null /* 'assets/gomitas_v5.2.png' */,    frames: 1, size: 22 },
-  puffs:      { src: null /* 'assets/brazy_puffs_v5.2.png' */, frames: 1, size: 24 },
+  skittles:   { src: 'assets/skittles_v2.png',    frames: 1, size: 24 },
+  gomitas:    { src: 'assets/gomitas_v2.png',     frames: 1, size: 24 },
+  puffs:      { src: 'assets/brazy_puffs_v2.png', frames: 1, size: 24 },
   // Power-ups
-  redbull:    { src: null /* 'assets/redbull_green_v5.2.png' */, frames: 1, size: 28 },
-  caldo:      { src: null /* 'assets/caldo_mama_v5.2.png' */,    frames: 1, size: 28 },
+  redbull:    { src: 'assets/redbull_green_v2.png', frames: 1, size: 32 },
+  pasta:      { src: 'assets/pasta_v2.png',         frames: 1, size: 22 },
   // Obstáculos (ocupan una casilla completa de 32x32)
-  estereofon: { src: null /* 'assets/estereofon_v5.2.png' */, frames: 1, size: 32 },
-  zapallo:    { src: null /* 'assets/zapallo_v5.2.png' */,    frames: 1, size: 32 },
+  estereofon: { src: 'assets/estereofon_v2.png', frames: 1, size: 32 },
+  zapallo:    { src: 'assets/zapallo_v2.png',    frames: 1, size: 32 },
 };
 
 /* ---------------------------------------------------------------------
@@ -50,7 +50,7 @@ const CFG = {
   foamSlow: 0.45,         // multiplicador sobre Estereofón
   redbullBoost: 1.9,      // multiplicador de supervelocidad
   redbullTime: 6,         // segundos
-  caldoTime: 5,           // segundos de invencibilidad
+  pastaTime: 5,           // segundos de invencibilidad
   hitInvuln: 2,           // segundos de parpadeo tras un golpe
   snacksOnMap: 6,
   powerupEvery: 9,        // cada cuántos segundos aparece un power-up
@@ -118,7 +118,7 @@ const PLACEHOLDERS = {
     palette: { s: '#c9c9c9', g: '#2a9d4b', r: '#d1495b' },
     rows: ['..ssss..', '.gggggg.', '.gggggg.', '.grrggg.', '.ggrrgg.', '.gggggg.', '.gggggg.', '..ssss..'],
   },
-  caldo: {
+  pasta: {
     palette: { w: '#ffffff', b: '#2f6fed', y: '#f4d35e' },
     rows: ['..w..w..', '.w..w...', '..w..w..', 'bbbbbbbb', 'byyyyyyb', '.bbbbbb.', '..bbbb..', '.bbbbbb.'],
   },
@@ -330,7 +330,7 @@ export class ArcadeGame {
   }
 
   #spawnPowerup() {
-    const type = Math.random() < 0.5 ? 'redbull' : 'caldo';
+    const type = Math.random() < 0.5 ? 'redbull' : 'pasta';
     this.powerups.push({ type, life: CFG.powerupLife, ...this.#randomFreeTile(64) });
   }
 
@@ -417,14 +417,14 @@ export class ArcadeGame {
         this.powerups.splice(i, 1);
         this.hooks.onSfx?.('powerup');
         if (u.type === 'redbull') { p.speedT = CFG.redbullTime; this.#float('¡SUPERVELOCIDAD!', p.x, p.y - 26, '#7dffa0'); }
-        else { p.shieldT = CFG.caldoTime; this.#float('¡INVENCIBLE!', p.x, p.y - 26, '#ffe08a'); }
+        else { p.shieldT = CFG.pastaTime; this.#float('¡INVENCIBLE!', p.x, p.y - 26, '#ffe08a'); }
       }
     }
 
     // --- Enemigos ---
     const difficulty = 1 + Math.min(0.5, this.time / 150); // se aceleran poco a poco
     for (const e of this.enemies) {
-      e.anim += dt * 6;
+      e.anim += dt * 4;
       if (e.stun > 0) { e.stun -= dt; continue; }
       if (e.type === 'vader') this.#updateVader(e, dt, difficulty);
       else if (e.type === 'homelander') this.#updateHomelander(e, dt, difficulty);
@@ -530,7 +530,7 @@ export class ArcadeGame {
   #touchEnemy(e) {
     const p = this.player;
     if (p.shieldT > 0) {
-      // Con el Caldo de mamá mandas al enemigo de vuelta a su esquina
+      // Con el plato de pasta mandas al enemigo de vuelta a su esquina
       this.#addScore(50, e.x, e.y);
       this.hooks.onSfx?.('bash');
       this.#sendToCorner(e);
@@ -630,7 +630,7 @@ export class ArcadeGame {
       ctx.fillText(label, TILE + 9, y + 8);
     };
     bar('RED BULL', p.speedT, CFG.redbullTime, '#7dffa0', 0);
-    bar('CALDO', p.shieldT, CFG.caldoTime, '#ffe08a', p.speedT > 0 ? 1 : 0);
+    bar('PASTA', p.shieldT, CFG.pastaTime, '#ffe08a', p.speedT > 0 ? 1 : 0);
 
     ctx.restore();
   }
@@ -706,7 +706,7 @@ export class ArcadeGame {
     const footY = p.y + 12;
     this.#shadow(p.x, footY - 1);
     if (p.shieldT > 0) {
-      // Aura del Caldo de mamá
+      // Aura del plato de pasta
       ctx.strokeStyle = p.shieldT < 1.5 && Math.floor(p.shieldT * 8) % 2 ? '#fff' : '#ffe08a';
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(p.x, p.y - 8, 26, 0, Math.PI * 2); ctx.stroke();

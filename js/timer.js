@@ -108,6 +108,7 @@ export class PomodoroTimer {
     this.interval = null;
     this.lastPhraseAt = 0;
     this.lastPhrase = '';
+    this.breakId = 0; // identifica cada descanso (para no cobrar dos veces el mismo premio)
     this.#restore();
   }
 
@@ -201,6 +202,7 @@ export class PomodoroTimer {
     this.running = false;
     clearInterval(this.interval);
     this.remainingMs = DURATIONS[mode];
+    if (mode === 'break') this.breakId = Date.now();
     this.hooks.onModeChange?.(mode);
     if (autostart) this.start();
     else {
@@ -231,7 +233,7 @@ export class PomodoroTimer {
   #persist() {
     try {
       localStorage.setItem(TIMER_KEY, JSON.stringify({
-        mode: this.mode, running: this.running, remainingMs: this.remainingMs, endAt: this.endAt,
+        mode: this.mode, running: this.running, remainingMs: this.remainingMs, endAt: this.endAt, breakId: this.breakId,
       }));
     } catch { /* sin almacenamiento: no pasa nada */ }
   }
@@ -241,6 +243,7 @@ export class PomodoroTimer {
       const saved = JSON.parse(localStorage.getItem(TIMER_KEY));
       if (!saved || !DURATIONS[saved.mode]) return;
       this.mode = saved.mode;
+      this.breakId = saved.breakId || 0;
       if (saved.running) {
         const left = saved.endAt - Date.now();
         if (left > 0) {

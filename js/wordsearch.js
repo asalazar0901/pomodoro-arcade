@@ -2,19 +2,19 @@
    wordsearch.js — Minijuego 1: Sopa de letras con generador automático.
    ===================================================================== */
 
-/* Mapas (niveles). Para añadir uno nuevo, agrega otra entrada aquí. */
-export const WORD_MAPS = {
-  apodos: {
-    title: 'Mapa 1: Apodos',
-    size: 12,
-    words: ['cosi', 'marshmello', 'grogu', 'besito', 'precioso', 'mivida'],
-  },
-  carino: {
-    title: 'Mapa 2: Cariño',
-    size: 13,
-    words: ['tequiero', 'teamo', 'sosasombroso'],
-  },
-};
+/* Mapas (niveles). Se llenan desde public/contenido/juegos.js con setMaps(). */
+export const WORD_MAPS = {};
+
+/** Recibe la lista `sopa` de juegos.js y calcula el tamaño de cada cuadrícula. */
+export function setMaps(list) {
+  Object.keys(WORD_MAPS).forEach((k) => delete WORD_MAPS[k]);
+  for (const m of list) {
+    const longest = Math.max(...m.palabras.map((w) => w.length));
+    const letters = m.palabras.reduce((n, w) => n + w.length, 0);
+    const size = Math.max(8, Math.min(15, Math.max(longest + 2, Math.ceil(Math.sqrt(letters * 2.6)))));
+    WORD_MAPS[m.id] = { title: m.titulo, size, words: m.palabras };
+  }
+}
 
 // Las 8 direcciones posibles [fila, columna]
 const DIRECTIONS = [

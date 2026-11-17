@@ -20,7 +20,7 @@ export const SOUNDS = {
   powerup:      { src: null /* 'sounds/powerup.mp3' */,   notes: [523, 659, 784, 1047, 1568], step: 0.07 },
   hit:          { src: null /* 'sounds/golpe.mp3' */,     notes: [220, 165, 110], step: 0.09, wave: 'sawtooth' },
   foam:         { src: null /* 'sounds/estereofon.mp3' */, notes: [140, 100], step: 0.06, wave: 'triangle' },
-  bash:         { src: null /* 'sounds/caldo.mp3' */,     notes: [392, 784], step: 0.07 },
+  bash:         { src: null /* 'sounds/pasta.mp3' */,     notes: [392, 784], step: 0.07 },
   gameOver:     { src: null /* 'sounds/gameover.mp3' */,  notes: [440, 330, 220, 165], step: 0.16 },
   // --- Sopa de letras, tienda y varios ---
   word:         { src: null /* 'sounds/palabra.mp3' */,   notes: [880], step: 0.1 },

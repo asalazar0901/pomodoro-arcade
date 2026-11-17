@@ -6,7 +6,9 @@
 import { store } from './store.js';
 import { PomodoroTimer, formatTime, getMinutes, saveMinutes, validateMinutes, LIMITS } from './timer.js';
 import { security } from './security.js';
-import { WordSearch, WORD_MAPS } from './wordsearch.js';
+import { WordSearch, WORD_MAPS, setMaps } from './wordsearch.js';
+import { loadGameData } from './gamedata.js';
+import { Hangman, Cosidle, Trivia, ChessPuzzle } from './minigames.js';
 import { ArcadeGame, ARCADE_TICKET_SCORE } from './arcade.js';
 import { initSyllabus } from './syllabus.js';
 import { initAgenda } from './agenda.js';
@@ -49,7 +51,44 @@ $$('[data-goto]').forEach((b) => b.addEventListener('click', () => showView(b.da
    Temporizador
    --------------------------------------------------------------------- */
 // Premios ya cobrados en el descanso actual (máx. 1 ticket por juego y descanso)
-let breakRewards = { apodos: false, carino: false, arcade: false };
+// Se guardan por descanso (breakId) para que recargar la página no permita cobrar dos veces.
+const CLAIMS_KEY = 'pomodoroArcade.claims';
+let claims = { breakId: 0, rewards: {}, tickets: 0 };
+function loadClaims() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CLAIMS_KEY));
+    if (saved && saved.breakId === timer.breakId) return { rewards: {}, tickets: 0, ...saved };
+  } catch { /* datos corruptos: se empieza de cero */ }
+  return { breakId: timer.breakId, rewards: {}, tickets: 0 };
+}
+function saveClaims() {
+  try { localStorage.setItem(CLAIMS_KEY, JSON.stringify(claims)); } catch { /* sin almacenamiento */ }
+}
+
+/**
+ * Intenta dar 1 ticket por ganar un minijuego.
+ * Devuelve 'ok', 'free' (fuera del descanso), 'claimed' (ya cobrado en este descanso) o 'cap' (tope alcanzado).
+ */
+function awardTicket(gameKey) {
+  if (!isBreak()) return 'free';
+  if (claims.rewards[gameKey]) return 'claimed';
+  if (claims.tickets >= gameData.ajustes.ticketsMaxPorDescanso) return 'cap';
+  claims.rewards[gameKey] = true;
+  claims.tickets += 1;
+  saveClaims();
+  store.addTickets(1);
+  updateGameCards();
+  return 'ok';
+}
+
+function rewardText(result) {
+  return {
+    ok: '¡Ganaste! +1 🎟️',
+    free: 'Fuera del descanso no se ganan tickets.',
+    claimed: 'El ticket de este juego ya lo cobraste en este descanso.',
+    cap: `Ya ganaste el máximo de ${gameData.ajustes.ticketsMaxPorDescanso} tickets de minijuegos en este descanso.`,
+  }[result];
+}
 const isBreak = () => timer.mode === 'break';
 // Se puede jugar en el descanso, o en cualquier momento con el código de seguridad
 const canPlay = () => isBreak() || security.unlocked;
@@ -101,7 +140,7 @@ const timer = new PomodoroTimer({
     refreshGamesLock();
 
     if (onBreak) {
-      breakRewards = { apodos: false, carino: false, arcade: false };
+      claims = loadClaims();
       updateGameCards();
       showGameMenu();
     } else {
@@ -136,30 +175,101 @@ function showGameMenu() {
   $('#game-menu').hidden = false;
   $('#game-wordsearch').hidden = true;
   $('#game-arcade').hidden = true;
+  $('#game-mini').hidden = true;
+  updateGameCards();
+}
+
+/** Tarjetas del menú. Las sopas de letras salen de public/contenido/juegos.js. */
+function gameCards() {
+  return [
+    ...gameData.sopa.map((m) => ({ key: `ws:${m.id}`, emoji: '🔤', name: 'Sopa de letras', desc: m.titulo, reward: 'al completarla' })),
+    { key: 'ahorcado', emoji: '🍡', name: 'Salva el malvavisco', desc: 'Ahorcado con villanos', reward: 'al salvarlo' },
+    { key: 'cosidle', emoji: '🟩', name: 'Cosi-dle', desc: 'La palabra en 6 intentos', reward: 'al adivinarla' },
+    { key: 'trivia', emoji: '📝', name: 'Examen sorpresa', desc: gameData.trivia.titulo, reward: 'al aprobar' },
+    { key: 'ajedrez', emoji: '♟️', name: 'Reto de ajedrez', desc: 'Mate en 1', reward: 'al dar mate' },
+    { key: 'arcade', emoji: '👷', name: 'Arcade de supervivencia', desc: 'Snacks, jefes y Red Bull', reward: `a los ${ARCADE_TICKET_SCORE} pts` },
+  ];
+}
+
+function renderGameMenu() {
+  $('#game-menu').innerHTML = gameCards().map((g) => `
+    <button class="game-card" type="button" data-game="${escapeHtml(g.key)}">
+      <span class="game-emoji" aria-hidden="true">${g.emoji}</span>
+      <span class="game-name">${escapeHtml(g.name)}</span>
+      <span class="game-desc">${escapeHtml(g.desc)}</span>
+      <span class="game-reward">+1 🎟️ ${escapeHtml(g.reward)}</span>
+    </button>`).join('');
   updateGameCards();
 }
 
 function updateGameCards() {
-  $('[data-game="ws-apodos"]').classList.toggle('done', breakRewards.apodos);
-  $('[data-game="ws-carino"]').classList.toggle('done', breakRewards.carino);
-  $('[data-game="arcade"]').classList.toggle('done', breakRewards.arcade);
+  $$('#game-menu [data-game]').forEach((card) => card.classList.toggle('done', !!claims.rewards[card.dataset.game]));
+  const cap = gameData.ajustes.ticketsMaxPorDescanso;
+  $('#games-cap').textContent = isBreak()
+    ? `Tickets de minijuegos en este descanso: ${Math.min(claims.tickets, cap)}/${cap}`
+    : '';
 }
 
-$$('.arcade-goal').forEach((el) => { el.textContent = ARCADE_TICKET_SCORE; });
 $$('[data-back]').forEach((b) => b.addEventListener('click', showGameMenu));
 
-$$('.game-card').forEach((card) => card.addEventListener('click', () => {
-  if (!canPlay()) return; // seguridad: solo en descansos o con código
+$('#game-menu').addEventListener('click', (e) => {
+  const card = e.target.closest('[data-game]');
+  if (!card || !canPlay()) return; // seguridad: solo en descansos o con código
   const game = card.dataset.game;
   $('#game-menu').hidden = true;
   if (game === 'arcade') {
     $('#game-arcade').hidden = false;
     showArcadeOverlay('Arcade de supervivencia', `Recoge snacks y esquiva a los jefes. A los ${ARCADE_TICKET_SCORE} puntos ganas 1 🎟️.`, '▶ Jugar');
-  } else {
+  } else if (game.startsWith('ws:')) {
     $('#game-wordsearch').hidden = false;
-    wordsearch.load(game === 'ws-apodos' ? 'apodos' : 'carino');
+    wordsearch.load(game.slice(3));
+  } else {
+    openMini(game);
   }
-}));
+  window.scrollTo({ top: 0 });
+});
+
+/* ---- Ahorcado, Cosi-dle, examen sorpresa y ajedrez ---- */
+const MINI_GAMES = {
+  ahorcado: { title: 'Salva el malvavisco', make: (root, hooks) => new Hangman(root, gameData.ahorcado, hooks) },
+  cosidle: { title: 'Cosi-dle', make: (root, hooks) => new Cosidle(root, gameData.cosidle, hooks) },
+  trivia: { title: 'Examen sorpresa', make: (root, hooks) => new Trivia(root, gameData.trivia, hooks) },
+  ajedrez: { title: 'Reto de ajedrez', make: (root, hooks) => new ChessPuzzle(root, gameData.ajedrez, hooks) },
+};
+let currentMini = null;
+
+function openMini(key) {
+  leaveMini();
+  const def = MINI_GAMES[key];
+  const result = $('#mini-result');
+  result.textContent = '';
+  $('#mini-title').textContent = def.title;
+  $('#game-mini').hidden = false;
+  currentMini = def.make($('#mini-root'), {
+    sfx: (name) => audio.play(name),
+    onWin: () => {
+      const r = awardTicket(key);
+      result.textContent = rewardText(r);
+      result.classList.toggle('is-ok', r === 'ok');
+      if (r === 'ok') toast('¡Minijuego ganado! +1 🎟️');
+    },
+    onLose: () => {
+      result.textContent = 'Sin ticket esta vez. Pulsa «Nueva» para intentarlo otra vez.';
+      result.classList.remove('is-ok');
+    },
+  });
+  currentMini.start();
+}
+
+function leaveMini() {
+  currentMini?.destroy();
+  currentMini = null;
+}
+
+$('#mini-new').addEventListener('click', () => {
+  $('#mini-result').textContent = '';
+  currentMini?.start();
+});
 
 /* ---- Sopa de letras ---- */
 const wordsearch = new WordSearch(
@@ -169,17 +279,9 @@ const wordsearch = new WordSearch(
     onComplete(mapId) {
       store.recordMapDone(mapId);
       audio.play('win');
-      if (isBreak() && !breakRewards[mapId]) {
-        breakRewards[mapId] = true;
-        store.addTickets(1);
-        $('#ws-msg').textContent = `¡${WORD_MAPS[mapId].title} completado! +1 🎟️`;
-        toast('¡Sopa de letras completada! +1 🎟️');
-      } else if (!isBreak()) {
-        $('#ws-msg').textContent = '¡Completado! (Fuera del descanso no se ganan tickets.)';
-      } else {
-        $('#ws-msg').textContent = '¡Completado! (El ticket de este mapa ya lo cobraste en este descanso.)';
-      }
-      updateGameCards();
+      const r = awardTicket(`ws:${mapId}`);
+      $('#ws-msg').textContent = r === 'ok' ? `¡${WORD_MAPS[mapId].title} completado! +1 🎟️` : `¡Completado! ${rewardText(r)}`;
+      if (r === 'ok') toast('¡Sopa de letras completada! +1 🎟️');
     },
   },
 );
@@ -200,12 +302,9 @@ const arcade = new ArcadeGame($('#arcade-canvas'), {
   },
   onSfx(event) { audio.play(event); },
   onTicketGoal() {
-    if (isBreak() && !breakRewards.arcade) {
-      breakRewards.arcade = true;
-      store.addTickets(1);
+    if (awardTicket('arcade') === 'ok') {
       audio.play('win');
       toast(`¡${ARCADE_TICKET_SCORE} puntos! +1 🎟️`);
-      updateGameCards();
     }
   },
   onGameOver(score) {
@@ -223,6 +322,7 @@ const arcade = new ArcadeGame($('#arcade-canvas'), {
 function leaveArcade() {
   if (arcade.running && arcade.score > 0) store.recordArcadeScore(arcade.score);
   arcade.stop();
+  leaveMini(); // también cierra el ahorcado, Cosi-dle, trivia o ajedrez
 }
 
 function startArcade() {
@@ -433,6 +533,10 @@ initAntiCheat((message) => {
 const syllabus = initSyllabus();
 const agenda = await initAgenda(); // lee public/contenido/notas.js y eventos.js
 store.subscribe(() => { renderStats(); renderShop(); renderOwned(); syllabus.render(); agenda.render(); });
+const { data: gameData, error: gameDataError } = await loadGameData(); // public/contenido/juegos.js
+setMaps(gameData.sopa);
+if (gameDataError) { $('#games-error').hidden = false; $('#games-error').textContent = gameDataError; }
+renderGameMenu();
 renderSettings();
 await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo
 timer.refresh();      // pinta el reloj y restaura el estado si se recargó la página
