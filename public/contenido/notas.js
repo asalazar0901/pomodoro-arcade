@@ -40,4 +40,5 @@ export const NOTAS = [
   { fecha: '2026-12-24', texto: 'Feliz Nochebuena, mi amor. Hoy no se estudia, hoy se descansa.' },
   { fecha: '2026-12-31', texto: 'Último día del año. Gracias por compartirlo conmigo.' },
   { fecha: '2027-02-14', texto: 'Feliz día, mi vida. Eres mi persona favorita.' },
+   { fecha: '2027-11-25', texto: 'Feliz cumplea mi amor, mi vida. Eres mi persona favorita.' },
 ];
