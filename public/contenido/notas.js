@@ -22,7 +22,7 @@ export const NOTAS = [
   // ---------- Notas de cualquier día ----------
   'Buenos días, mi vida. Hoy también creo en ti.',
   'Recordatorio: eres el ingeniero más guapo que conozco.',
-  'Si hoy se pone difícil, acuérdate de que ya has pasado cosas peores. Y con estilo.',
+  'Si hoy se pone difícil, acuérdate de que ya has pasado cosas peores. (Sobrevivir a kabi en la misma habitación).',
   'Te quiero más que Grogu a las galletas azules.',
   'Un besito virtual para que te dure hasta que nos veamos.',
   'Estoy orgullosa de ti, aunque hoy solo logres un pomodoro.',
@@ -32,7 +32,7 @@ export const NOTAS = [
   'Hoy alguien pensó en ti como quince veces. Fui yo.',
   'No tienes que poder con todo hoy. Solo con el siguiente bloque.',
   'Cuando termines, cuéntame qué aprendiste. Me encanta oírte explicar.',
-  'Marshmello, precioso, mi vida: escoge el apodo que quieras, todos son tuyos.',
+  'Mi amor, precioso, mi vida: escoge el apodo que quieras, todos son tuyos.',
   'Tu esfuerzo de hoy es el brownie de mañana. Literalmente.',
   'Sos asombroso. Por si hoy se te olvidó.',
 
