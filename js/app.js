@@ -4,7 +4,8 @@
    ===================================================================== */
 
 import { store } from './store.js';
-import { PomodoroTimer, formatTime } from './timer.js';
+import { PomodoroTimer, formatTime, getMinutes, saveMinutes, validateMinutes, LIMITS } from './timer.js';
+import { security } from './security.js';
 import { WordSearch, WORD_MAPS } from './wordsearch.js';
 import { ArcadeGame, ARCADE_TICKET_SCORE } from './arcade.js';
 import { initSyllabus } from './syllabus.js';
@@ -56,7 +57,7 @@ function showView(name) {
   $$('.view').forEach((v) => v.classList.toggle('is-active', v.id === `view-${name}`));
   $$('.tab').forEach((t) => t.classList.toggle('is-active', t.dataset.view === name));
   if (name !== 'games') leaveArcade(); // el arcade no corre en segundo plano
-  if (name === 'games' && isBreak()) showGameMenu();
+  if (name === 'games' && canPlay()) showGameMenu();
   window.scrollTo({ top: 0 });
 }
 $$('.tab').forEach((t) => t.addEventListener('click', () => showView(t.dataset.view)));
@@ -68,6 +69,22 @@ $$('[data-goto]').forEach((b) => b.addEventListener('click', () => showView(b.da
 // Premios ya cobrados en el descanso actual (máx. 1 ticket por juego y descanso)
 let breakRewards = { apodos: false, carino: false, arcade: false };
 const isBreak = () => timer.mode === 'break';
+// Se puede jugar en el descanso, o en cualquier momento con el código de seguridad
+const canPlay = () => isBreak() || security.unlocked;
+
+/** Abre o cierra la zona de minijuegos según el modo y el código. */
+function refreshGamesLock() {
+  const open = canPlay();
+  $('#games-lock').hidden = open;
+  $('#games-locked').hidden = open;
+  $('#games-open').hidden = !open;
+  $('#break-banner').hidden = !isBreak();
+  $('#free-banner').hidden = isBreak() || !security.unlocked;
+  if (!open) {
+    leaveArcade();
+    if (currentView === 'games') showGameMenu();
+  }
+}
 
 const timer = new PomodoroTimer({
   onTick({ mode, remainingMs, totalMs, running }) {
@@ -99,19 +116,19 @@ const timer = new PomodoroTimer({
     $('#mode-label').textContent = onBreak ? 'Descanso' : 'Modo concentración';
     $('#btn-skip').hidden = !onBreak;
     $('#btn-go-games').hidden = !onBreak;
-    $('#games-lock').hidden = onBreak;
-    $('#games-locked').hidden = onBreak;
-    $('#games-open').hidden = !onBreak;
+    refreshGamesLock();
 
     if (onBreak) {
       breakRewards = { apodos: false, carino: false, arcade: false };
       updateGameCards();
       showGameMenu();
     } else {
-      // Fin del descanso: se cierran los juegos
-      leaveArcade();
+      // Fin del descanso: se cierran los juegos (salvo modo libre con código)
       $('#phrase').textContent = 'Pulsa «Iniciar» cuando estés listo para el siguiente bloque.';
-      if (currentView === 'games') showView('timer');
+      if (!canPlay()) {
+        leaveArcade();
+        if (currentView === 'games') showView('timer');
+      }
     }
   },
 
@@ -150,7 +167,7 @@ $$('.arcade-goal').forEach((el) => { el.textContent = ARCADE_TICKET_SCORE; });
 $$('[data-back]').forEach((b) => b.addEventListener('click', showGameMenu));
 
 $$('.game-card').forEach((card) => card.addEventListener('click', () => {
-  if (!isBreak()) return; // seguridad: solo en descansos
+  if (!canPlay()) return; // seguridad: solo en descansos o con código
   const game = card.dataset.game;
   $('#game-menu').hidden = true;
   if (game === 'arcade') {
@@ -175,6 +192,8 @@ const wordsearch = new WordSearch(
         store.addTickets(1);
         $('#ws-msg').textContent = `¡${WORD_MAPS[mapId].title} completado! +1 🎟️`;
         toast('¡Sopa de letras completada! +1 🎟️');
+      } else if (!isBreak()) {
+        $('#ws-msg').textContent = '¡Completado! (Fuera del descanso no se ganan tickets.)';
       } else {
         $('#ws-msg').textContent = '¡Completado! (El ticket de este mapa ya lo cobraste en este descanso.)';
       }
@@ -224,7 +243,7 @@ function leaveArcade() {
 }
 
 function startArcade() {
-  if (!isBreak()) return;
+  if (!canPlay()) return;
   $('#arcade-overlay').hidden = true;
   arcade.start();
   $('#arcade-canvas').scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -348,9 +367,66 @@ $('#coupon-redeem').addEventListener('click', () => {
 });
 
 /* ---------------------------------------------------------------------
+   Ajustes del reloj y código de seguridad
+   --------------------------------------------------------------------- */
+function renderSettings() {
+  const { work, break: brk } = getMinutes();
+  $('#set-work').value = work;
+  $('#set-break').value = brk;
+  $$('[data-work-min]').forEach((el) => { el.textContent = work; });
+  $$('[data-break-min]').forEach((el) => { el.textContent = brk; });
+  $('#settings-limits').textContent = security.unlocked
+    ? `Código activo: puedes poner de ${LIMITS.adminMin} a ${LIMITS.adminMax} minutos.`
+    : `Estudio: de ${LIMITS.workMin} a ${LIMITS.workMax} min. Descanso: de ${LIMITS.breakMin} a ${LIMITS.breakMax} min.`;
+}
+
+function setMsg(el, text, isError = false) {
+  el.textContent = text;
+  el.classList.toggle('is-error', isError);
+}
+
+$('#settings-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const work = Number($('#set-work').value);
+  const brk = Number($('#set-break').value);
+  const error = validateMinutes(work, brk, security.unlocked);
+  if (error) { setMsg($('#settings-msg'), error, true); return; }
+  saveMinutes(work, brk);
+  const appliedNow = timer.applyDurations();
+  renderSettings();
+  setMsg($('#settings-msg'), appliedNow ? '✔ Tiempos guardados.' : '✔ Guardado. El cambio entra en el siguiente bloque.');
+});
+
+// Hay dos formularios de código: en Ajustes y en la zona de juegos bloqueada
+$$('[data-code-form]').forEach((form) => form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = form.querySelector('input');
+  const msg = form.parentElement.querySelector('[data-code-msg]');
+  const ok = await security.unlock(input.value);
+  input.value = '';
+  if (ok) { setMsg(msg, ''); beep([660, 990, 1320]); toast('🔓 Código correcto. Modo libre activado hasta recargar la página.'); }
+  else setMsg(msg, '✖ Código incorrecto.', true);
+}));
+
+$('#code-lock').addEventListener('click', () => security.lock());
+
+security.onChange((unlocked) => {
+  $('#settings .code-box').classList.toggle('is-unlocked', unlocked);
+  $('#settings [data-code-form]').hidden = unlocked;
+  $('#code-lock').hidden = !unlocked;
+  $('#code-status').textContent = unlocked
+    ? '🔓 Código activo: sin mínimo de minutos y minijuegos abiertos. Se bloquea solo al recargar la página.'
+    : '🔒 Con el código de seguridad se pueden poner bloques de menos de 15 minutos y abrir los minijuegos sin esperar al descanso.';
+  renderSettings();
+  refreshGamesLock();
+  if (unlocked && currentView === 'games') showGameMenu();
+});
+
+/* ---------------------------------------------------------------------
    Arranque
    --------------------------------------------------------------------- */
 const syllabus = initSyllabus();
 store.subscribe(() => { renderStats(); renderShop(); renderOwned(); syllabus.render(); });
+renderSettings();
 await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo
 timer.refresh();      // pinta el reloj y restaura el estado si se recargó la página

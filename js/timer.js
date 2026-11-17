@@ -7,10 +7,61 @@
    bloques se acortan (25 s de trabajo, 60 s de descanso). */
 const DEMO = new URLSearchParams(location.search).has('demo');
 
-export const DURATIONS = {
-  work: DEMO ? 25 * 1000 : 25 * 60 * 1000,
-  break: DEMO ? 60 * 1000 : 10 * 60 * 1000,
+/* ---------------------------------------------------------------------
+   DURACIONES (editables desde ⚙ Ajustes)
+   --------------------------------------------------------------------- */
+export const LIMITS = {
+  // Sin código de seguridad:
+  workMin: 15, workMax: 90,
+  breakMin: 5, breakMax: 20,
+  // Con código de seguridad:
+  adminMin: 1, adminMax: 180,
 };
+const DEFAULT_MINUTES = { work: 25, break: 10 };
+const SETTINGS_KEY = 'pomodoroArcade.settings';
+
+function loadMinutes() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+    const ok = (v) => Number.isFinite(v) && v >= LIMITS.adminMin && v <= LIMITS.adminMax;
+    if (saved && ok(saved.work) && ok(saved.break)) return { work: saved.work, break: saved.break };
+  } catch { /* ajustes corruptos: se usan los de fábrica */ }
+  return { ...DEFAULT_MINUTES };
+}
+
+const minutes = loadMinutes();
+// En modo demo un "minuto" de trabajo dura 1 segundo y uno de descanso 6.
+const toMs = (mode, min) => min * (DEMO ? (mode === 'work' ? 1000 : 6000) : 60 * 1000);
+
+export const DURATIONS = { work: toMs('work', minutes.work), break: toMs('break', minutes.break) };
+
+export const getMinutes = () => ({ ...minutes });
+
+/**
+ * Valida unos minutos nuevos. `admin` = se introdujo el código de seguridad.
+ * Devuelve un texto de error, o null si todo está bien.
+ */
+export function validateMinutes(work, brk, admin = false) {
+  if (!Number.isInteger(work) || !Number.isInteger(brk)) return 'Escribe minutos enteros.';
+  if (admin) {
+    if (work < LIMITS.adminMin || brk < LIMITS.adminMin) return `El mínimo es ${LIMITS.adminMin} minuto.`;
+    if (work > LIMITS.adminMax || brk > LIMITS.adminMax) return `El máximo es ${LIMITS.adminMax} minutos.`;
+    return null;
+  }
+  if (work < LIMITS.workMin) return `El bloque no puede bajar de ${LIMITS.workMin} minutos sin el código de seguridad.`;
+  if (work > LIMITS.workMax) return `El bloque no puede pasar de ${LIMITS.workMax} minutos.`;
+  if (brk < LIMITS.breakMin || brk > LIMITS.breakMax) return `El descanso va de ${LIMITS.breakMin} a ${LIMITS.breakMax} minutos sin el código de seguridad.`;
+  return null;
+}
+
+/** Guarda los minutos nuevos. Llama después a timer.applyDurations(). */
+export function saveMinutes(work, brk) {
+  minutes.work = work;
+  minutes.break = brk;
+  DURATIONS.work = toMs('work', work);
+  DURATIONS.break = toMs('break', brk);
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(minutes)); } catch { /* sin almacenamiento */ }
+}
 
 export const WORK_PHRASES = [
   // Las tres obligatorias:
@@ -91,6 +142,19 @@ export class PomodoroTimer {
     this.#emit();
   }
 
+  /**
+   * Aplica las duraciones recién guardadas. Si el reloj está detenido se
+   * reinicia el bloque actual con el tiempo nuevo; si está corriendo, el
+   * cambio entra en el siguiente bloque. Devuelve true si se aplicó ya.
+   */
+  applyDurations() {
+    if (this.running) return false;
+    this.remainingMs = DURATIONS[this.mode];
+    this.#persist();
+    this.#emit();
+    return true;
+  }
+
   /** Termina el descanso antes de tiempo y vuelve a modo concentración. */
   skipBreak() {
     if (this.mode !== 'break') return;
@@ -158,7 +222,7 @@ export class PomodoroTimer {
     this.hooks.onTick?.({
       mode: this.mode,
       remainingMs: this.remainingMs,
-      totalMs: DURATIONS[this.mode],
+      totalMs: Math.max(DURATIONS[this.mode], this.remainingMs),
       running: this.running,
     });
   }

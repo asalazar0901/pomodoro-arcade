@@ -65,6 +65,34 @@
         <button id="btn-go-games" class="btn btn-brown btn-wide" type="button" hidden>🕹 ¡Descanso! Jugar minijuegos</button>
       </div>
 
+      <!-- ============ AJUSTES DEL RELOJ Y CÓDIGO DE SEGURIDAD ============ -->
+      <details class="panel settings-panel" id="settings">
+        <summary>⚙ Ajustes del reloj</summary>
+        <form id="settings-form" autocomplete="off" novalidate>
+          <div class="settings-grid">
+            <label>Estudio (min)
+              <input type="number" id="set-work" inputmode="numeric" min="1" max="180" step="1" />
+            </label>
+            <label>Descanso (min)
+              <input type="number" id="set-break" inputmode="numeric" min="1" max="180" step="1" />
+            </label>
+          </div>
+          <p class="hint" id="settings-limits"></p>
+          <button class="btn btn-primary btn-small" type="submit">Guardar tiempos</button>
+          <p class="form-msg" id="settings-msg" aria-live="polite"></p>
+        </form>
+
+        <div class="code-box">
+          <p class="hint" id="code-status">🔒 Con el código de seguridad se pueden poner bloques de menos de 15 minutos y abrir los minijuegos sin esperar al descanso.</p>
+          <form class="add-row" data-code-form autocomplete="off">
+            <input type="password" maxlength="40" placeholder="Código de seguridad" aria-label="Código de seguridad" autocomplete="off" />
+            <button class="btn btn-brown btn-small" type="submit">Desbloquear</button>
+          </form>
+          <button class="btn btn-ghost btn-small" type="button" id="code-lock" hidden>🔒 Volver a bloquear</button>
+          <p class="form-msg" data-code-msg aria-live="polite"></p>
+        </div>
+      </details>
+
       <!-- ============ TEMARIOS DE EXAMEN (materias y temas) ============ -->
       <div class="panel syllabus-panel" aria-labelledby="syllabus-title">
         <h3 id="syllabus-title">Temarios de examen</h3>
@@ -85,7 +113,7 @@
           <li><span class="stat-num" id="stat-total">0</span><span class="stat-label">Pomodoros totales</span></li>
           <li><span class="stat-num" id="stat-arcade">0</span><span class="stat-label">Récord arcade</span></li>
         </ul>
-        <p class="hint">Cada bloque de 25 min completo = 1 🎟️. En el descanso de 10 min se abren los minijuegos para ganar tickets extra.</p>
+        <p class="hint">Cada bloque de <span data-work-min>25</span> min completo = 1 🎟️. En el descanso de <span data-break-min>10</span> min se abren los minijuegos para ganar tickets extra.</p>
       </div>
     </section>
 
@@ -97,12 +125,21 @@
       <div class="panel locked-panel" id="games-locked">
         <div class="locked-icon" aria-hidden="true">🔒</div>
         <p><strong>Zona cerrada por estudio.</strong></p>
-        <p>Los minijuegos solo se abren durante el descanso. Termina tu bloque de 25 minutos y vuelve por aquí.</p>
+        <p>Los minijuegos solo se abren durante el descanso. Termina tu bloque de <span data-work-min>25</span> minutos y vuelve por aquí.</p>
         <button class="btn btn-primary" type="button" data-goto="timer">Volver al Pomodoro</button>
+        <div class="code-box">
+          <p class="hint">¿Tienes el código de seguridad? Con él se abren sin esperar.</p>
+          <form class="add-row" data-code-form autocomplete="off">
+            <input type="password" maxlength="40" placeholder="Código de seguridad" aria-label="Código de seguridad" autocomplete="off" />
+            <button class="btn btn-brown btn-small" type="submit">Desbloquear</button>
+          </form>
+          <p class="form-msg" data-code-msg aria-live="polite"></p>
+        </div>
       </div>
 
       <div id="games-open" hidden>
-        <p class="break-banner">Descanso en curso: <strong id="break-left">10:00</strong></p>
+        <p class="break-banner" id="break-banner">Descanso en curso: <strong id="break-left">10:00</strong></p>
+        <p class="break-banner" id="free-banner" hidden>🔓 Modo libre con código. Fuera del descanso los juegos no dan tickets.</p>
 
         <!-- Menú de juegos -->
         <div class="game-menu" id="game-menu">

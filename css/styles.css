@@ -170,6 +170,26 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
 .stat-num { display: block; font-family: var(--font-pixel); font-size: 18px; color: var(--blue); }
 .stat-label { font-size: 18px; color: var(--coffee-dark); }
 
+/* ============================ AJUSTES ============================ */
+.settings-panel > summary {
+  font-family: var(--font-pixel); font-size: 11px; color: var(--coffee); cursor: pointer; list-style: none;
+}
+.settings-panel > summary::-webkit-details-marker { display: none; }
+.settings-panel > summary::after { content: " ▼"; font-size: 8px; }
+.settings-panel[open] > summary::after { content: " ▲"; }
+.settings-panel[open] > summary { margin-bottom: 12px; }
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; align-items: end; }
+.settings-grid label { display: grid; gap: 4px; font-size: 19px; color: var(--coffee-dark); }
+.settings-grid input {
+  width: 100%; font-family: var(--font-pixel); font-size: 14px; color: var(--navy);
+  background: #fff; border: 3px solid var(--ink); border-radius: 0; padding: 8px;
+}
+.settings-grid input:focus { outline: 3px solid var(--blue); }
+.form-msg { font-size: 20px; min-height: 1.2em; margin: 8px 0 0; color: var(--ok); }
+.form-msg.is-error { color: var(--danger); }
+.code-box { margin-top: 14px; padding-top: 12px; border-top: 2px dashed var(--coffee); text-align: left; }
+.code-box.is-unlocked #code-status { color: var(--ok); }
+
 /* ============================ TEMARIOS ============================ */
 .focus-pick {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 10px;
