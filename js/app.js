@@ -9,6 +9,7 @@ import { security } from './security.js';
 import { WordSearch, WORD_MAPS } from './wordsearch.js';
 import { ArcadeGame, ARCADE_TICKET_SCORE } from './arcade.js';
 import { initSyllabus } from './syllabus.js';
+import { initAgenda } from './agenda.js';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -426,7 +427,8 @@ security.onChange((unlocked) => {
    Arranque
    --------------------------------------------------------------------- */
 const syllabus = initSyllabus();
-store.subscribe(() => { renderStats(); renderShop(); renderOwned(); syllabus.render(); });
+const agenda = await initAgenda(); // lee contenido/notas.js y contenido/eventos.js
+store.subscribe(() => { renderStats(); renderShop(); renderOwned(); syllabus.render(); agenda.render(); });
 renderSettings();
 await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo
 timer.refresh();      // pinta el reloj y restaura el estado si se recargó la página

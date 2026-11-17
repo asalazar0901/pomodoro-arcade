@@ -148,6 +148,14 @@ const DEFAULT_STATE = () => ({
   //   { id, name, topics: [{ id, name, done, pomodoros }] }
   subjects: [],
   focus: null, // tema que se está estudiando: { subjectId, topicId }
+  // Agenda
+  events: [], // eventos que él agrega: { id, nombre, fecha: 'AAAA-MM-DD', categoria }
+  // Pendientes por categoría: { id, name, tasks: [{ id, text, done }] }
+  taskCats: [
+    { id: 'universidad', name: 'Universidad', tasks: [] },
+    { id: 'ajedrez', name: 'Ajedrez', tasks: [] },
+    { id: 'personal', name: 'Personal', tasks: [{ id: 'mensajito', text: 'Mandarle un mensajito a tu novia', done: false }] },
+  ],
 });
 
 const newId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -172,6 +180,8 @@ class Store {
         stats: { ...base.stats, ...raw.stats, mapsDone: { ...base.stats.mapsDone, ...(raw.stats?.mapsDone || {}) } },
         owned: Array.isArray(raw.owned) ? raw.owned : [],
         subjects: Array.isArray(raw.subjects) ? raw.subjects : [],
+        events: Array.isArray(raw.events) ? raw.events : [],
+        taskCats: Array.isArray(raw.taskCats) ? raw.taskCats : base.taskCats,
       };
     } catch {
       return base;
@@ -328,6 +338,58 @@ class Store {
     const subject = this.state.subjects.find((s) => s.id === f.subjectId);
     const topic = subject?.topics.find((t) => t.id === f.topicId);
     return topic ? { subject, topic } : null;
+  }
+
+  /* ---------- agenda: eventos propios ---------- */
+  addEvent({ nombre, fecha, categoria }) {
+    const event = { id: newId(), nombre: nombre.trim(), fecha, categoria };
+    this.state.events.push(event);
+    this.#save();
+    return event;
+  }
+
+  removeEvent(eventId) {
+    this.state.events = this.state.events.filter((e) => e.id !== eventId);
+    this.#save();
+  }
+
+  /* ---------- agenda: pendientes por categoría ---------- */
+  addTaskCat(name) {
+    name = name.trim();
+    if (!name) return null;
+    const cat = { id: newId(), name, tasks: [] };
+    this.state.taskCats.push(cat);
+    this.#save();
+    return cat;
+  }
+
+  removeTaskCat(catId) {
+    this.state.taskCats = this.state.taskCats.filter((c) => c.id !== catId);
+    this.#save();
+  }
+
+  addTask(catId, text) {
+    text = text.trim();
+    const cat = this.state.taskCats.find((c) => c.id === catId);
+    if (!cat || !text) return null;
+    const task = { id: newId(), text, done: false };
+    cat.tasks.push(task);
+    this.#save();
+    return task;
+  }
+
+  removeTask(catId, taskId) {
+    const cat = this.state.taskCats.find((c) => c.id === catId);
+    if (!cat) return;
+    cat.tasks = cat.tasks.filter((t) => t.id !== taskId);
+    this.#save();
+  }
+
+  toggleTask(catId, taskId, done) {
+    const task = this.state.taskCats.find((c) => c.id === catId)?.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    task.done = done ?? !task.done;
+    this.#save();
   }
 
   redeem(code) {

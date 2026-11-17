@@ -28,6 +28,7 @@
   <!-- ============================ NAVEGACIÓN ============================ -->
   <nav class="tabs" aria-label="Secciones">
     <button class="tab is-active" data-view="timer" type="button">⏱ Pomodoro</button>
+    <button class="tab" data-view="agenda" type="button">📅 Agenda</button>
     <button class="tab" data-view="games" type="button">
       🕹 Minijuegos <span id="games-lock" class="lock" aria-hidden="true">🔒</span>
     </button>
@@ -114,6 +115,47 @@
           <li><span class="stat-num" id="stat-arcade">0</span><span class="stat-label">Récord arcade</span></li>
         </ul>
         <p class="hint">Cada bloque de <span data-work-min>25</span> min completo = 1 🎟️. En el descanso de <span data-break-min>10</span> min se abren los minijuegos para ganar tickets extra.</p>
+      </div>
+    </section>
+
+    <!-- ====================== VISTA: AGENDA ====================== -->
+    <section id="view-agenda" class="view" aria-labelledby="agenda-title">
+      <h2 id="agenda-title" class="section-title">Agenda</h2>
+      <p class="form-msg is-error center" id="agenda-error" hidden></p>
+
+      <!-- Nota del día: sale de contenido/notas.js -->
+      <div class="panel note-panel">
+        <p class="note-kicker">💌 Nota de hoy</p>
+        <p class="note-text" id="note-text"></p>
+        <button class="btn btn-ghost btn-small" type="button" id="note-next">↻ Otra nota</button>
+      </div>
+
+      <!-- Cuenta regresiva: contenido/eventos.js + los que él agregue -->
+      <div class="panel">
+        <h3 class="panel-title">⏳ Cuenta regresiva</h3>
+        <ul class="events" id="event-list"></ul>
+        <p class="hint center" id="event-empty">No hay eventos próximos. Agrega tu siguiente torneo o examen.</p>
+        <form id="event-form" class="event-form" autocomplete="off">
+          <input type="text" id="event-name" maxlength="60" placeholder="Nuevo evento (ej. Torneo sub-2000)" aria-label="Nombre del evento" />
+          <div class="event-form-row">
+            <input type="date" id="event-date" aria-label="Fecha del evento" />
+            <select id="event-category" aria-label="Categoría del evento"></select>
+            <button class="btn btn-primary btn-small" type="submit">+ Evento</button>
+          </div>
+          <p class="form-msg is-error" id="event-msg" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <!-- Pendientes por categoría -->
+      <div class="panel syllabus-panel">
+        <h3 class="panel-title">✅ Pendientes</h3>
+        <p class="hint">Tareas por hacer, ordenadas por categoría. Puedes agregar o quitar categorías.</p>
+        <form class="add-row" id="taskcat-form" autocomplete="off">
+          <input type="text" id="taskcat-input" maxlength="40" placeholder="Nueva categoría (ej. Casa)" aria-label="Nombre de la categoría" />
+          <button class="btn btn-primary btn-small" type="submit">+ Categoría</button>
+        </form>
+        <div id="taskcat-list"></div>
+        <p class="hint center" id="taskcat-empty">Sin categorías. Crea la primera arriba.</p>
       </div>
     </section>
 

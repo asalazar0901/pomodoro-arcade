@@ -6,6 +6,7 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
 
 - **Pomodoro 25/10** con frases motivacionales. Cada bloque de 25 min completo da 1 🎟️.
 - **Tiempos editables** en ⚙ Ajustes: el bloque de estudio no baja de 15 minutos sin el código de seguridad. Con el código también se abren los minijuegos fuera del descanso (sin dar tickets). El código se cambia en `js/security.js`.
+- **Agenda**: nota del día, cuenta regresiva de eventos (torneos, exámenes, entregas) y pendientes por categoría.
 - **Temarios de examen**: materias que se abren como carpetas, cada una con su checklist de temas. Se pueden agregar y quitar materias y temas, marcar lo ya estudiado y elegir con 🎯 qué tema se estudia en el Pomodoro. Cada bloque terminado se anota en ese tema.
 - **Minijuegos solo en el descanso**:
   - Sopa de letras con generador automático (Mapa 1: Apodos, Mapa 2: Cariño). Completarla da +1 🎟️.
@@ -26,6 +27,15 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
 
 Para cambiar premios, precios o misiones edita el array `COUPON_CATALOG` en `js/store.js`.
 
+## Editar notas y eventos desde GitHub
+
+Las notas para alegrarle el día y los eventos de la cuenta regresiva viven en dos archivos pensados para editarse desde la web de GitHub, sin programar:
+
+- `contenido/notas.js`: una nota por línea. También acepta notas para una fecha exacta.
+- `contenido/eventos.js`: nombre, fecha y categoría de cada evento.
+
+Abre el archivo en GitHub, pulsa el lápiz ✏️, cambia lo que quieras y pulsa **Commit changes**. Vercel publica el cambio solo. Cada archivo trae las instrucciones arriba. Si un archivo queda con un error de escritura, la app sigue funcionando y la Agenda avisa cuál revisar.
+
 ## Estructura
 
 ```
@@ -38,6 +48,9 @@ js/syllabus.js     Temarios de examen (materias y temas)
 js/security.js     Código de seguridad
 js/wordsearch.js   Sopa de letras
 js/arcade.js       Arcade en Canvas
+js/agenda.js       Agenda: nota del día, cuenta regresiva y pendientes
+contenido/notas.js    Notas del día (editable en GitHub)
+contenido/eventos.js  Eventos de la cuenta regresiva (editable en GitHub)
 assets/            Sprites
 ```
 
