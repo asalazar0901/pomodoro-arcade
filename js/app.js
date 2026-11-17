@@ -10,6 +10,8 @@ import { WordSearch, WORD_MAPS } from './wordsearch.js';
 import { ArcadeGame, ARCADE_TICKET_SCORE } from './arcade.js';
 import { initSyllabus } from './syllabus.js';
 import { initAgenda } from './agenda.js';
+import { audio } from './audio.js';
+import { initAntiCheat } from './anticheat.js';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -23,27 +25,6 @@ function toast(text, ms = 3200) {
   el.textContent = text;
   $('#toasts').appendChild(el);
   setTimeout(() => el.remove(), ms);
-}
-
-/* Sonidito 8-bit con WebAudio (sin archivos de audio). */
-let audioCtx = null;
-function beep(notes = [660, 880, 1320]) {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    notes.forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'square';
-      osc.frequency.value = freq;
-      const t0 = audioCtx.currentTime + i * 0.14;
-      gain.gain.setValueAtTime(0.08, t0);
-      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.13);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start(t0);
-      osc.stop(t0 + 0.14);
-    });
-  } catch { /* sin audio: no pasa nada */ }
 }
 
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -102,11 +83,11 @@ const timer = new PomodoroTimer({
     if (finished === 'work') {
       const studied = store.focusedTopic();
       store.recordPomodoro();
-      beep([660, 880, 1320]);
+      audio.play('pomodoroDone');
       toast('¡Bloque terminado! +1 🎟️. Empieza tu descanso: los minijuegos están abiertos.', 5000);
       if (studied) toast(`Bloque anotado en ${studied.subject.name}: ${studied.topic.name}. Si ya lo dominas, márcalo en el temario.`, 6000);
     } else {
-      beep([880, 660, 440]);
+      audio.play('breakDone');
       toast('Se acabó el descanso. Pulsa «Iniciar» para el siguiente bloque.', 5000);
     }
   },
@@ -142,7 +123,7 @@ const timer = new PomodoroTimer({
   },
 });
 
-$('#btn-start').addEventListener('click', () => { beep([520]); timer.toggle(); });
+$('#btn-start').addEventListener('click', () => { audio.play('click'); timer.toggle(); });
 $('#btn-reset').addEventListener('click', () => timer.reset());
 $('#btn-skip').addEventListener('click', () => timer.skipBreak());
 $('#btn-go-games').addEventListener('click', () => showView('games'));
@@ -184,10 +165,10 @@ $$('.game-card').forEach((card) => card.addEventListener('click', () => {
 const wordsearch = new WordSearch(
   { grid: $('#ws-grid'), words: $('#ws-words'), msg: $('#ws-msg'), title: $('#ws-title') },
   {
-    onWordFound() { beep([880]); },
+    onWordFound() { audio.play('word'); },
     onComplete(mapId) {
       store.recordMapDone(mapId);
-      beep([660, 880, 1100, 1320]);
+      audio.play('win');
       if (isBreak() && !breakRewards[mapId]) {
         breakRewards[mapId] = true;
         store.addTickets(1);
@@ -217,18 +198,19 @@ const arcade = new ArcadeGame($('#arcade-canvas'), {
     $('#hud-score').textContent = score;
     $('#hud-lives').textContent = '❤'.repeat(Math.max(0, lives)) || '✖';
   },
+  onSfx(event) { audio.play(event); },
   onTicketGoal() {
     if (isBreak() && !breakRewards.arcade) {
       breakRewards.arcade = true;
       store.addTickets(1);
-      beep([660, 880, 1100, 1320]);
+      audio.play('win');
       toast(`¡${ARCADE_TICKET_SCORE} puntos! +1 🎟️`);
       updateGameCards();
     }
   },
   onGameOver(score) {
     const record = store.recordArcadeScore(score);
-    beep([440, 330, 220]);
+    audio.play('gameOver');
     showArcadeOverlay(
       record ? '¡Nuevo récord!' : 'Game over',
       `Hiciste ${score} puntos.${record ? ' Tu mejor marca hasta ahora.' : ''}`,
@@ -246,6 +228,10 @@ function leaveArcade() {
 function startArcade() {
   if (!canPlay()) return;
   $('#arcade-overlay').hidden = true;
+  // Penalización anti-trampas: mientras queden partidas castigadas, todos son Darth Vader
+  const penalty = store.usePenalty();
+  arcade.vaderMode = penalty > 0;
+  if (penalty > 0) toast(`😈 Penalización por tramposo: todos los enemigos son Darth Vader. Te queda${penalty === 1 ? '' : 'n'} ${penalty} partida${penalty === 1 ? '' : 's'} así.`, 5000);
   arcade.start();
   $('#arcade-canvas').scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
@@ -328,7 +314,7 @@ $('#shop-grid').addEventListener('click', (e) => {
   if (!btn) return;
   const owned = store.buy(btn.dataset.buy);
   if (!owned) return;
-  beep([660, 990, 1320]);
+  audio.play('coupon');
   openCoupon(owned.code);
 });
 
@@ -405,7 +391,7 @@ $$('[data-code-form]').forEach((form) => form.addEventListener('submit', async (
   const msg = form.parentElement.querySelector('[data-code-msg]');
   const ok = await security.unlock(input.value);
   input.value = '';
-  if (ok) { setMsg(msg, ''); beep([660, 990, 1320]); toast('🔓 Código correcto. Modo libre activado hasta recargar la página.'); }
+  if (ok) { setMsg(msg, ''); audio.play('coupon'); toast('🔓 Código correcto. Modo libre activado hasta recargar la página.'); }
   else setMsg(msg, '✖ Código incorrecto.', true);
 }));
 
@@ -424,10 +410,28 @@ security.onChange((unlocked) => {
 });
 
 /* ---------------------------------------------------------------------
+   Sonido (botón de silencio) y anti-trampas
+   --------------------------------------------------------------------- */
+const muteBtn = $('#btn-mute');
+const paintMute = () => {
+  muteBtn.textContent = audio.muted ? '🔇' : '🔊';
+  muteBtn.setAttribute('aria-pressed', String(audio.muted));
+  muteBtn.title = audio.muted ? 'Activar sonido' : 'Silenciar';
+};
+muteBtn.addEventListener('click', () => { audio.toggleMute(); paintMute(); audio.play('click'); });
+paintMute();
+
+initAntiCheat((message) => {
+  audio.play('busted');
+  toast(`🚨 ${message}`, 7000);
+  toast('😈 Penalización: tus próximas 3 partidas del arcade son todo Darth Vader.', 7000);
+});
+
+/* ---------------------------------------------------------------------
    Arranque
    --------------------------------------------------------------------- */
 const syllabus = initSyllabus();
-const agenda = await initAgenda(); // lee contenido/notas.js y contenido/eventos.js
+const agenda = await initAgenda(); // lee public/contenido/notas.js y eventos.js
 store.subscribe(() => { renderStats(); renderShop(); renderOwned(); syllabus.render(); agenda.render(); });
 renderSettings();
 await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo

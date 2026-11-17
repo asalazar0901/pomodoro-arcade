@@ -138,10 +138,10 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
 }
 .timer-panel[data-mode="break"] .clock { color: var(--coffee-dark); text-shadow: 4px 4px 0 var(--latte); }
 
-/* Sprite del ingeniero: hoja de 4 cuadros de 36x64 px (assets/ingeniero_v5.2.png) */
+/* Sprite del ingeniero: hoja de 4 cuadros de 36x64 px (public/assets/ingeniero_v5.2.png) */
 .walker {
   width: 54px; height: 96px; flex: none;
-  background: url("../assets/ingeniero_v5.2.png") 0 0 / 216px 96px no-repeat;
+  background: url("/assets/ingeniero_v5.2.png") 0 0 / 216px 96px no-repeat;
   image-rendering: pixelated;
 }
 .walker.is-walking { animation: walk .7s steps(4) infinite; }
@@ -273,6 +273,22 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
 }
 .event-form input:focus, .event-form select:focus { outline: 3px solid var(--blue); }
 .event-form .form-msg { margin: 0; min-height: 0; }
+
+.note-editor { margin-top: 14px; padding-top: 10px; border-top: 2px dashed var(--coffee); text-align: left; }
+.note-editor > summary { cursor: pointer; font-size: 20px; color: var(--coffee); list-style: none; text-align: center; }
+.note-editor > summary::-webkit-details-marker { display: none; }
+.note-editor .event-form { border-top: 0; }
+.inline-label { display: grid; gap: 2px; font-size: 18px; color: var(--coffee); flex: 1 1 150px; }
+.note-list { list-style: none; margin: 10px 0 0; padding: 0; max-height: 320px; overflow: auto; border: 3px solid var(--ink); background: #fff; }
+.note-list li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-bottom: 1px dashed var(--latte); font-size: 20px; }
+.note-list li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.note-list .tag { flex: none; font-size: 16px; color: var(--coffee); white-space: nowrap; }
+.event-actions { flex: none; display: grid; gap: 4px; }
+.event.is-editing { outline: 3px solid var(--warn); }
+.mute {
+  margin-left: auto; width: 40px; height: 36px; padding: 0; font-size: 18px; line-height: 1;
+  background: var(--coffee); border: var(--px) solid var(--ink); flex: none;
+}
 
 /* ============================ MINIJUEGOS ============================ */
 .locked-panel { text-align: center; }

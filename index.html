@@ -19,6 +19,7 @@
       <span class="brand-icon" aria-hidden="true">🍅</span>
       <h1>Pomodoro Arcade</h1>
     </div>
+    <button class="mute" id="btn-mute" type="button" aria-label="Sonido" aria-pressed="false">🔊</button>
     <div class="wallet" title="Tickets disponibles" aria-live="polite">
       <span class="ticket-icon" aria-hidden="true">🎟️</span>
       <span id="ticket-count">0</span>
@@ -123,14 +124,29 @@
       <h2 id="agenda-title" class="section-title">Agenda</h2>
       <p class="form-msg is-error center" id="agenda-error" hidden></p>
 
-      <!-- Nota del día: sale de contenido/notas.js -->
+      <!-- Nota del día: sale de public/contenido/notas.js -->
       <div class="panel note-panel">
         <p class="note-kicker">💌 Nota de hoy</p>
         <p class="note-text" id="note-text"></p>
         <button class="btn btn-ghost btn-small" type="button" id="note-next">↻ Otra nota</button>
+
+        <!-- Editor de notas dentro de la app -->
+        <details class="note-editor" id="note-editor">
+          <summary>✏️ Editar notas</summary>
+          <form id="note-form" class="event-form" autocomplete="off">
+            <input type="text" id="note-input" maxlength="160" placeholder="Nueva nota" aria-label="Texto de la nota" />
+            <div class="event-form-row">
+              <label class="inline-label">Solo este día (opcional)
+                <input type="date" id="note-date" aria-label="Fecha de la nota (opcional)" />
+              </label>
+              <button class="btn btn-primary btn-small" type="submit">+ Nota</button>
+            </div>
+          </form>
+          <ul class="note-list" id="note-list"></ul>
+        </details>
       </div>
 
-      <!-- Cuenta regresiva: contenido/eventos.js + los que él agregue -->
+      <!-- Cuenta regresiva: public/contenido/eventos.js + los que él agregue -->
       <div class="panel">
         <h3 class="panel-title">⏳ Cuenta regresiva</h3>
         <ul class="events" id="event-list"></ul>
@@ -140,7 +156,8 @@
           <div class="event-form-row">
             <input type="date" id="event-date" aria-label="Fecha del evento" />
             <select id="event-category" aria-label="Categoría del evento"></select>
-            <button class="btn btn-primary btn-small" type="submit">+ Evento</button>
+            <button class="btn btn-primary btn-small" type="submit" id="event-submit">+ Evento</button>
+            <button class="btn btn-ghost btn-small" type="button" id="event-cancel" hidden>Cancelar</button>
           </div>
           <p class="form-msg is-error" id="event-msg" aria-live="polite"></p>
         </form>
@@ -157,6 +174,10 @@
         <div id="taskcat-list"></div>
         <p class="hint center" id="taskcat-empty">Sin categorías. Crea la primera arriba.</p>
       </div>
+
+      <p class="center" id="restore-wrap" hidden>
+        <button class="btn btn-ghost btn-small" type="button" id="restore-defaults">↺ Recuperar notas y eventos originales</button>
+      </p>
     </section>
 
     <!-- ====================== VISTA 2: MINIJUEGOS ====================== -->

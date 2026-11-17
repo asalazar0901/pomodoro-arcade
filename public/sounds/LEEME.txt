@@ -1,0 +1,3 @@
+Pon aquí tus efectos de sonido (.mp3) y escribe su ruta en js/audio.js,
+por ejemplo:  snack: { src: 'sounds/snack.mp3', ... }
+Mientras `src` sea null, la app usa un sonido 8-bit sintetizado.

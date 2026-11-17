@@ -4,6 +4,15 @@
    ===================================================================== */
 
 const STORAGE_KEY = 'pomodoroArcade.v1';
+const SHADOW_KEY = 'pomodoroArcade.v1.s'; // copia firmada de los tickets (anti-trampas)
+
+/* Firma sencilla (FNV-1a) de los datos que no se deben tocar a mano. */
+function signature(state) {
+  const text = `pa|${state.tickets}|${state.stats.totalPomodoros}|${state.owned.length}|grogu`;
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return (h >>> 0).toString(36);
+}
 
 /* ---------------------------------------------------------------------
    CATÁLOGO DE CUPONES
@@ -151,6 +160,10 @@ const DEFAULT_STATE = () => ({
   // Agenda
   events: [], // eventos que él agrega: { id, nombre, fecha: 'AAAA-MM-DD', categoria }
   // Pendientes por categoría: { id, name, tasks: [{ id, text, done }] }
+  notes: [],        // notas que se agregan desde la app: { id, texto, fecha? }
+  hiddenNotes: [],  // textos de notas predeterminadas que se quitaron en la app
+  hiddenEvents: [], // claves de eventos predeterminados que se quitaron o editaron en la app
+  penalty: 0,       // partidas de arcade con penalización anti-trampas pendientes
   taskCats: [
     { id: 'universidad', name: 'Universidad', tasks: [] },
     { id: 'ajedrez', name: 'Ajedrez', tasks: [] },
@@ -164,6 +177,7 @@ class Store {
   constructor() {
     this.listeners = new Set();
     this.catalog = COUPON_CATALOG;
+    this.tampered = false; // true si alguien editó los tickets a mano en localStorage
     this.state = this.#load();
     this.#rollDay();
   }
@@ -174,7 +188,7 @@ class Store {
     try {
       const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (!raw) return base;
-      return {
+      const state = {
         ...base,
         ...raw,
         stats: { ...base.stats, ...raw.stats, mapsDone: { ...base.stats.mapsDone, ...(raw.stats?.mapsDone || {}) } },
@@ -182,14 +196,63 @@ class Store {
         subjects: Array.isArray(raw.subjects) ? raw.subjects : [],
         events: Array.isArray(raw.events) ? raw.events : [],
         taskCats: Array.isArray(raw.taskCats) ? raw.taskCats : base.taskCats,
+        notes: Array.isArray(raw.notes) ? raw.notes : [],
+        hiddenNotes: Array.isArray(raw.hiddenNotes) ? raw.hiddenNotes : [],
+        hiddenEvents: Array.isArray(raw.hiddenEvents) ? raw.hiddenEvents : [],
       };
+      state.tickets = Math.max(0, Math.floor(Number(state.tickets) || 0));
+      // Anti-trampas: si la firma no cuadra, alguien tocó los datos a mano.
+      if (raw._sig && raw._sig !== signature(state)) {
+        this.tampered = true;
+        state.tickets = this.#shadowTickets() ?? 0; // se restauran los tickets de verdad
+      }
+      return state;
     } catch {
       return base;
     }
   }
 
+  /** Tickets de la copia firmada, o null si no existe o también fue alterada. */
+  #shadowTickets() {
+    try {
+      const [tickets, sig] = atob(localStorage.getItem(SHADOW_KEY) || '').split('.');
+      const n = Number(tickets);
+      let h = 0x811c9dc5;
+      for (const ch of `sh|${n}|marshmello`) { h ^= ch.charCodeAt(0); h = Math.imul(h, 0x01000193); }
+      return Number.isInteger(n) && n >= 0 && sig === (h >>> 0).toString(36) ? n : null;
+    } catch { return null; }
+  }
+
+  /** Compara lo guardado con lo que hay en memoria. false = alguien lo cambió por fuera. */
+  verifyStorage() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (!raw) return true;
+      const ok = raw.tickets === this.state.tickets && raw._sig === signature(this.state);
+      if (!ok) this.#save(); // se vuelve a escribir el estado bueno
+      return ok;
+    } catch { return true; }
+  }
+
+  /** Penalización cómica: las próximas partidas del arcade son todo Darth Vader. */
+  applyPenalty(games = 3) {
+    this.state.penalty = games;
+    this.#save();
+  }
+
+  /** Consume una partida de penalización. Devuelve cuántas quedaban antes (0 = sin castigo). */
+  usePenalty() {
+    const left = this.state.penalty || 0;
+    if (left > 0) { this.state.penalty = left - 1; this.#save(); }
+    return left;
+  }
+
   #save() {
     try {
+      this.state._sig = signature(this.state);
+      let h = 0x811c9dc5;
+      for (const ch of `sh|${this.state.tickets}|marshmello`) { h ^= ch.charCodeAt(0); h = Math.imul(h, 0x01000193); }
+      localStorage.setItem(SHADOW_KEY, btoa(`${this.state.tickets}.${(h >>> 0).toString(36)}`));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
     } catch { /* modo privado o almacenamiento lleno: la app sigue funcionando */ }
     this.listeners.forEach((fn) => fn(this.state));
@@ -341,8 +404,8 @@ class Store {
   }
 
   /* ---------- agenda: eventos propios ---------- */
-  addEvent({ nombre, fecha, categoria }) {
-    const event = { id: newId(), nombre: nombre.trim(), fecha, categoria };
+  addEvent({ nombre, fecha, categoria, nota }) {
+    const event = { id: newId(), nombre: nombre.trim(), fecha, categoria, ...(nota ? { nota } : {}) };
     this.state.events.push(event);
     this.#save();
     return event;
@@ -350,6 +413,61 @@ class Store {
 
   removeEvent(eventId) {
     this.state.events = this.state.events.filter((e) => e.id !== eventId);
+    this.#save();
+  }
+
+  updateEvent(eventId, { nombre, fecha, categoria }) {
+    const event = this.state.events.find((e) => e.id === eventId);
+    if (!event) return;
+    Object.assign(event, { nombre: nombre.trim(), fecha, categoria });
+    this.#save();
+  }
+
+  /** Oculta un evento predeterminado (los del archivo de GitHub) en este navegador. */
+  hideEvent(key) {
+    if (!this.state.hiddenEvents.includes(key)) this.state.hiddenEvents.push(key);
+    this.#save();
+  }
+
+  /* ---------- agenda: notas ---------- */
+  addNote(texto, fecha = '') {
+    texto = texto.trim();
+    if (!texto) return null;
+    const note = { id: newId(), texto, ...(fecha ? { fecha } : {}) };
+    this.state.notes.push(note);
+    this.#save();
+    return note;
+  }
+
+  removeNote(noteId) {
+    this.state.notes = this.state.notes.filter((n) => n.id !== noteId);
+    this.#save();
+  }
+
+  /** Oculta una nota predeterminada en este navegador. */
+  hideNote(texto) {
+    if (!this.state.hiddenNotes.includes(texto)) this.state.hiddenNotes.push(texto);
+    this.#save();
+  }
+
+  /** Vuelve a mostrar todas las notas y eventos predeterminados. */
+  restoreDefaults() {
+    this.state.hiddenNotes = [];
+    this.state.hiddenEvents = [];
+    this.#save();
+  }
+
+  renameTaskCat(catId, name) {
+    const cat = this.state.taskCats.find((c) => c.id === catId);
+    if (!cat || !name.trim()) return;
+    cat.name = name.trim();
+    this.#save();
+  }
+
+  renameTask(catId, taskId, text) {
+    const task = this.state.taskCats.find((c) => c.id === catId)?.tasks.find((t) => t.id === taskId);
+    if (!task || !text.trim()) return;
+    task.text = text.trim();
     this.#save();
   }
 

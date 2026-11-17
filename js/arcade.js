@@ -6,8 +6,8 @@
 /* ---------------------------------------------------------------------
    SPRITES — AQUÍ VAN LAS RUTAS DE TUS IMÁGENES (Midjourney v5.2)
    ---------------------------------------------------------------------
-   Guarda cada PNG (fondo transparente) en la carpeta /assets y pon su
-   ruta en `src`. Mientras `src` sea null, el juego dibuja un placeholder
+   Guarda cada PNG (fondo transparente) en la carpeta /public/assets y pon
+   su ruta en `src` como 'assets/archivo.png' (sin "public"). Mientras `src` sea null, el juego dibuja un placeholder
    en pixel art hecho por código, así que funciona sin ninguna imagen.
 
    - Si tu imagen es una hoja de animación horizontal (varios cuadros en
@@ -138,12 +138,14 @@ export class ArcadeGame {
    * @param {(score:number, lives:number) => void} hooks.onHud
    * @param {(score:number) => void} hooks.onTicketGoal  Se llama una vez por partida al llegar a ARCADE_TICKET_SCORE.
    * @param {(score:number) => void} hooks.onGameOver
+   * @param {(event: 'snack'|'powerup'|'hit'|'foam'|'bash') => void} hooks.onSfx  Para los efectos de sonido.
    */
   constructor(canvas, hooks = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.hooks = hooks;
     this.running = false;
+    this.vaderMode = false; // penalización anti-trampas: todos los enemigos son Darth Vader
     this.input = { up: false, down: false, left: false, right: false };
     this.images = {};
     this.#loadSprites();
@@ -218,11 +220,12 @@ export class ArcadeGame {
     this.lives = CFG.lives;
     this.goalReached = false;
     this.shake = 0;
+    this.shakeAmp = 8;
     this.floaters = [];
     this.#buildMap();
     this.player = {
       x: tileCenter(7), y: tileCenter(7), half: 9,
-      facing: 1, moving: false, anim: 0,
+      facing: 1, moving: false, anim: 0, onFoam: false,
       speedT: 0, shieldT: 0, invulnT: 0,
     };
     this.enemies = [];
@@ -332,6 +335,7 @@ export class ArcadeGame {
   }
 
   #spawnEnemy(type) {
+    if (this.vaderMode) type = 'vader';
     // Aparece en la esquina más lejana al jugador
     const corners = [[1, 1], [1, COLS - 2], [ROWS - 2, 1], [ROWS - 2, COLS - 2]];
     corners.sort((a, b) =>
@@ -374,7 +378,14 @@ export class ArcadeGame {
       const len = Math.hypot(ix, iy);
       ix /= len; iy /= len;
       let speed = CFG.playerSpeed;
-      if (this.#tileAt(p.x, p.y) === FOAM) speed *= CFG.foamSlow;   // Estereofón: ralentiza
+      const onFoam = this.#tileAt(p.x, p.y) === FOAM;
+      if (onFoam && !p.onFoam) {
+        // Acaba de chocar con el Estereofón: temblor ligero + sonido
+        this.shake = 0.18; this.shakeAmp = 4;
+        this.hooks.onSfx?.('foam');
+      }
+      p.onFoam = onFoam;
+      if (onFoam) speed *= CFG.foamSlow;                             // Estereofón: ralentiza
       if (p.speedT > 0) speed *= CFG.redbullBoost;                   // Red Bull: supervelocidad
       this.#moveWithCollisions(p, ix * speed * dt, iy * speed * dt); // Zapallo y muros: sólidos
       if (ix) p.facing = Math.sign(ix);
@@ -387,6 +398,7 @@ export class ArcadeGame {
       if (Math.hypot(s.x - p.x, s.y - p.y) < 18) {
         this.snacks.splice(i, 1);
         this.#addScore(SNACKS[s.type].points, s.x, s.y);
+        this.hooks.onSfx?.('snack');
         this.#spawnSnack();
       }
     }
@@ -403,6 +415,7 @@ export class ArcadeGame {
       if (u.life <= 0) { this.powerups.splice(i, 1); continue; }
       if (Math.hypot(u.x - p.x, u.y - p.y) < 20) {
         this.powerups.splice(i, 1);
+        this.hooks.onSfx?.('powerup');
         if (u.type === 'redbull') { p.speedT = CFG.redbullTime; this.#float('¡SUPERVELOCIDAD!', p.x, p.y - 26, '#7dffa0'); }
         else { p.shieldT = CFG.caldoTime; this.#float('¡INVENCIBLE!', p.x, p.y - 26, '#ffe08a'); }
       }
@@ -519,13 +532,15 @@ export class ArcadeGame {
     if (p.shieldT > 0) {
       // Con el Caldo de mamá mandas al enemigo de vuelta a su esquina
       this.#addScore(50, e.x, e.y);
+      this.hooks.onSfx?.('bash');
       this.#sendToCorner(e);
       return;
     }
     if (p.invulnT > 0) return;
     this.lives -= 1;
     p.invulnT = CFG.hitInvuln;
-    this.shake = 0.35;
+    this.shake = 0.35; this.shakeAmp = 8;
+    this.hooks.onSfx?.('hit');
     this.#float('¡AUCH!', p.x, p.y - 26, '#ff8fa3');
     this.hooks.onHud?.(this.score, this.lives);
     if (this.lives <= 0) {
@@ -562,7 +577,7 @@ export class ArcadeGame {
     const ctx = this.ctx;
     ctx.imageSmoothingEnabled = false;
     ctx.save();
-    if (this.shake > 0) ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+    if (this.shake > 0) ctx.translate((Math.random() - 0.5) * this.shakeAmp, (Math.random() - 0.5) * this.shakeAmp);
 
     // --- Suelo y casillas ---
     for (let r = 0; r < ROWS; r++) {
