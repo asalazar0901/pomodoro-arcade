@@ -33,6 +33,14 @@ export const JUEGOS = {
        pista   -> la ayuda que se muestra
      ------------------------------------------------------------------- */
   ahorcado: [
+    { palabra: 'india de rey', pista: 'Tu apertura de confianza con negras' },
+    { palabra: 'the mentalist', pista: 'La serie que verías otra vez desde el principio' },
+    { palabra: 'brown eyed girl', pista: 'La canción que te recuerda a mí' },
+    { palabra: 'wii sports', pista: 'Tu primera obsesión gamer' },
+    { palabra: 'valery salov', pista: 'Tu ajedrecista favorito (y villano del arcade)' },
+    { palabra: 'berenjena', pista: 'La comida que odiabas de niño' },
+    { palabra: 'tender la cama', pista: 'Lo primero que haces al despertar' },
+    { palabra: 'grageas', pista: 'El peor snack que has probado (cortesía de Harry Potter)' },
     { palabra: 'ornitorrinco', pista: 'El animal con el peor diseño de la naturaleza' },
     { palabra: 'dipper', pista: 'Disfraz goated que no sé cómo usasaste un día' },
     { palabra: 'marshmello', pista: 'Resultado que pasaría si no hay time out' },
@@ -53,6 +61,7 @@ export const JUEGOS = {
     'cuaces', 'chess', 'grogu', 'besos', 'pasta', 'torre',
     'reina', 'jaque', 'amigo', 'novio', 'cielo', 'cosi',
     'sushi', 'mabel', 'vader', 'sueño',
+    'motor', 'insta', 'blitz', 'tacos', 'negra',
   ],
 
   /* -------------------------------------------------------------------
@@ -103,6 +112,178 @@ export const JUEGOS = {
         pregunta: '¿Quiénes resuelven misterios y te inspiran a terminar el bloque?',
         opciones: ['Rick y Morty', 'Finn y Jake', 'Dipper y Mabel', 'Phineas y Ferb'],
         correcta: 'C',
+      },
+
+      // ---------- Preguntas con sus respuestas reales ----------
+      {
+        pregunta: 'Si pudieras comer una sola cosa toda la semana, ¿qué sería?',
+        opciones: ['Pizza', 'Dálmata', 'Sushi', 'Tacos al pastor'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Cuál es el peor snack que has probado?',
+        opciones: ['Takis Fuego', 'Chapulines', 'Las grageas de Harry Potter', 'Pulparindo'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Qué pides en una taquería sin pensarlo?',
+        opciones: ['Tacos', 'Gringas', 'Quesadillas', 'Tortas'],
+        correcta: 'A',
+      },
+      {
+        pregunta: 'Cuando estudias, ¿dulce o salado?',
+        opciones: ['Dulce', 'Salado', 'Ninguno, solo agua', 'Los dos al mismo tiempo'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Qué bebida nunca falta en tus noches de estudio?',
+        opciones: ['Café', 'Red Bull', 'La Coca', 'Té'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Qué comida odiabas de niño y ahora te gusta?',
+        opciones: ['Brócoli', 'Champiñones', 'Hígado', 'Berenjena'],
+        correcta: 'D',
+      },
+      {
+        pregunta: '¿Qué materia te ha hecho sufrir más hasta ahora?',
+        opciones: ['Cálculo 1', 'Física 2', 'Estática', 'Álgebra lineal'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Qué profe es el más intenso?',
+        opciones: ['Uno de mate', 'Uno de física', 'Uno de química', 'Uno de programación'],
+        correcta: 'A',
+      },
+      {
+        pregunta: '¿A qué hora estudias mejor?',
+        opciones: ['En la tarde', 'En la madrugada', 'Temprano', 'Justo antes del examen'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Qué haces cuando ya no puedes concentrarte?',
+        opciones: ['Una siesta', 'Hacer algo más', 'Comer', 'Ver reels'],
+        correcta: 'B',
+      },
+      {
+        pregunta: 'Si no fueras ingeniero, ¿qué estarías estudiando?',
+        opciones: ['Medicina', 'Arquitectura', 'Una ciencia básica, como mate o física pura', 'Música'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Cuál ha sido tu calificación más baja?',
+        opciones: ['38', '60', '71', '54'],
+        correcta: 'D',
+      },
+      {
+        pregunta: '¿Qué proyecto de la carrera te ha gustado más?',
+        opciones: ['Un puente', 'Un robot', 'Un motor', 'Una app'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Con qué apertura te sientes más cómodo?',
+        opciones: ['Siciliana', 'India de Rey', 'Gambito de dama', 'Italiana'],
+        correcta: 'B',
+      },
+      {
+        pregunta: 'En ajedrez, ¿blancas o negras?',
+        opciones: ['Blancas', 'Negras', 'Las que me toquen', 'Depende del rival'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Quién es tu ajedrecista favorito?',
+        opciones: ['Magnus Carlsen', 'Hikaru Nakamura', 'Valery Salov', 'Bobby Fischer'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Cuál es tu rating más alto en blitz?',
+        opciones: ['2240', '1850', '2040', '2400'],
+        correcta: 'A',
+      },
+      {
+        pregunta: '¿Qué serie podrías ver otra vez desde el principio?',
+        opciones: ['The Office', 'The Mentalist', 'Breaking Bad', 'Dr. House'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Cuál es tu personaje favorito de Gravity Falls?',
+        opciones: ['Mabel', 'Bill Cipher', 'El tío Stan', 'Dipper'],
+        correcta: 'D',
+      },
+      {
+        pregunta: '¿Cuál fue el primer videojuego que te obsesionó?',
+        opciones: ['Mario Kart', 'Minecraft', 'Wii Sports', 'FIFA'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Qué película te hace llorar aunque no lo admitas?',
+        opciones: ['Coco', 'La razón de estar contigo', 'Up', 'Interstellar'],
+        correcta: 'B',
+      },
+      {
+        pregunta: 'Si pudieras vivir en un universo de ficción, ¿cuál sería?',
+        opciones: ['Star Wars', 'Harry Potter', 'Marvel', 'El Señor de los Anillos'],
+        correcta: 'A',
+      },
+      {
+        pregunta: '¿Qué es lo primero que haces al despertar?',
+        opciones: ['Ver el celular', 'Tender la cama', 'Bañarte', 'Desayunar'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Cuánto tardas en contestar un mensaje cuando estás estudiando?',
+        opciones: ['Un minuto', 'Una hora', 'Hasta terminar el pomodoro', 'Al día siguiente'],
+        correcta: 'A',
+      },
+      {
+        pregunta: '¿Qué app abres más en el celular?',
+        opciones: ['TikTok', 'WhatsApp', 'Instagram', 'Lichess'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Qué te pone de malas en dos segundos?',
+        opciones: ['Que te interrumpan', 'Tener hambre', 'Perder en blitz', 'Escuchar algo que no querías escuchar'],
+        correcta: 'D',
+      },
+      {
+        pregunta: '¿Cuál es tu forma favorita de descansar?',
+        opciones: ['Jugando ajedrez', 'Durmiendo', 'Viendo series', 'Comiendo'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Pospones la alarma? ¿Cuántas veces?',
+        opciones: ['Nunca', 'Sí, una vez', 'Sí, tres veces', 'La apago y sigo dormido'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Cuál ha sido tu cita favorita conmigo?',
+        opciones: ['El parquecito y luego ir a comer', 'El cine', 'Un café', 'Una película en casa'],
+        correcta: 'A',
+      },
+      {
+        pregunta: '¿Qué canción te recuerda a mí?',
+        opciones: ['Perfect', 'Yellow', 'Brown Eyed Girl', 'Die With A Smile'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Qué lugar te gustaría que conociéramos juntos?',
+        opciones: ['Japón', 'París', 'Todo el mundo', 'La playa'],
+        correcta: 'C',
+      },
+      {
+        pregunta: '¿Qué es lo que más te gusta de cuando nos vemos?',
+        opciones: ['La comida', 'El tiempo de calidad', 'Los besos', 'Los brownies'],
+        correcta: 'B',
+      },
+      {
+        pregunta: '¿Cuál de mis apodos para ti es tu favorito?',
+        opciones: ['Cosi', 'Marshmello', 'Grogu', 'Mati'],
+        correcta: 'D',
+      },
+      {
+        pregunta: 'Si tuvieras que describirnos con una película, ¿cuál sería?',
+        opciones: ['Before Sunset', 'Titanic', 'Up', 'La La Land'],
+        correcta: 'A',
       },
     ],
   },
