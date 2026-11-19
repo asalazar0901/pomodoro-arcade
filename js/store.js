@@ -85,7 +85,7 @@ export const COUPON_CATALOG = [
     title: 'El Favor Absoluto (Úsalo cuando quieras)',
     note: 'Lo que pidas. Sin preguntas. Úsalo con sabiduría y ten cuidado de desperdiciarlo.',
     emoji: '👑',
-    price: 10,
+    price: 13,
     goal: { type: 'legend', value: { pomodoros: 12, arcade: 700 } },
   },
 ];

@@ -31,7 +31,7 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
 | Masaje de 5 minutos | 2 🎟️ | 4 pomodoros en total |
 | Masaje de 10 minutos | 3 🎟️ | 250 puntos en el arcade |
 | Masaje de 15 minutos | 5 🎟️ | 400 puntos en el arcade |
-| El Favor Absoluto | 10 🎟️ | 12 pomodoros, 700 pts en arcade y las dos sopas de letras |
+| El Favor Absoluto | 13 🎟️ | 12 pomodoros, 700 pts en arcade y las dos sopas de letras |
 
 Para cambiar premios, precios o misiones edita el array `COUPON_CATALOG` en `js/store.js`.
 
