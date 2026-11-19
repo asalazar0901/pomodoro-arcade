@@ -14,14 +14,14 @@
 
    Los eventos que ya pasaron se ocultan solos. Él también puede agregar
    los suyos desde la app; esos se guardan en su navegador, no aquí.
-
-   OJO: los de abajo son EJEMPLOS con fechas inventadas. Cámbialos por los reales.
    ===================================================================== */
 
 export const EVENTOS = [
-  { nombre: 'Nuestra próxima cita', fecha: '2026-11-28', categoria: 'nosotros', nota: 'Yo llevo el brownie.' },
-  { nombre: 'Examen final de Cálculo', fecha: '2026-12-05', categoria: 'examen', nota: 'Tú puedes. Ya tachaste medio temario.' },
-  { nombre: 'Torneo de ajedrez', fecha: '2026-12-12', categoria: 'ajedrez', nota: 'Juega bonito. Yo te echo porras.' },
-  { nombre: 'Entrega del proyecto final', fecha: '2026-12-15', categoria: 'tarea' },
+  { nombre: 'Examen importante', fecha: '2026-11-21', categoria: 'examen', nota: 'Tú puedes, Mati. Ya estudiaste un montón.' },
+  { nombre: 'Salida al cine', fecha: '2026-11-21', categoria: 'nosotros', nota: 'Después del examen, a celebrar.' },
+  { nombre: '¡Tu cumpleaños!', fecha: '2026-11-25', categoria: 'nosotros', nota: 'El cumple de mi novio precioso.' },
+  { nombre: 'Salida a comer sorpresa', fecha: '2026-11-28', categoria: 'nosotros', nota: 'No preguntes a dónde. Es sorpresa.' },
   { nombre: 'Navidad', fecha: '2026-12-25', categoria: 'nosotros' },
+  { nombre: 'Torneo Metropolitano', fecha: '2026-12-26', categoria: 'ajedrez', nota: 'Juega bonito. Yo te echo porras.' },
+  { nombre: 'Cumpleaños de tu novia', fecha: '2027-01-09', categoria: 'nosotros', nota: 'Ve pensando en el regalo.' },
 ];
