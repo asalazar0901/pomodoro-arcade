@@ -23,5 +23,5 @@ export const EVENTOS = [
   { nombre: 'Salida a comer sorpresa', fecha: '2026-11-28', categoria: 'nosotros', nota: 'No preguntes a dónde. Es sorpresa.' },
   { nombre: 'Navidad', fecha: '2026-12-25', categoria: 'nosotros' },
   { nombre: 'Torneo Metropolitano', fecha: '2026-12-26', categoria: 'ajedrez', nota: 'Juega bonito. Yo te echo porras.' },
-  { nombre: 'Cumpleaños de tu novia', fecha: '2027-01-09', categoria: 'nosotros', nota: 'Ve pensando en el regalo.' },
+  { nombre: 'Cumpleaños de tu novia', fecha: '2027-01-09', categoria: 'nosotros', nota: 'Pista de regalo: un marshmellito si?' },
 ];
