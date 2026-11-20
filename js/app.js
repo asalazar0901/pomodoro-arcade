@@ -248,17 +248,27 @@ function openMini(key) {
   currentMini = def.make($('#mini-root'), {
     sfx: (name) => audio.play(name),
     onWin: () => {
+      $('#mini-new').disabled = false;
       const r = awardTicket(key);
       result.textContent = rewardText(r);
       result.classList.toggle('is-ok', r === 'ok');
       if (r === 'ok') toast('¡Minijuego ganado! +1 🎟️');
     },
     onLose: () => {
+      $('#mini-new').disabled = false;
       result.textContent = 'Sin ticket esta vez. Pulsa «Nueva» para intentarlo otra vez.';
       result.classList.remove('is-ok');
     },
   });
   currentMini.start();
+  syncNewButton();
+}
+
+/** En el ahorcado, «Nueva» queda bloqueado hasta ganar o perder. */
+function syncNewButton() {
+  const locked = currentMini && 'canRestart' in currentMini && !currentMini.canRestart;
+  $('#mini-new').disabled = !!locked;
+  $('#mini-new').title = locked ? 'Termina esta palabra primero' : '';
 }
 
 function leaveMini() {
@@ -267,8 +277,10 @@ function leaveMini() {
 }
 
 $('#mini-new').addEventListener('click', () => {
+  if (currentMini && 'canRestart' in currentMini && !currentMini.canRestart) return;
   $('#mini-result').textContent = '';
   currentMini?.start();
+  syncNewButton();
 });
 
 /* ---- Sopa de letras ---- */

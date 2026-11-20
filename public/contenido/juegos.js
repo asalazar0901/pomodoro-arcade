@@ -67,6 +67,15 @@ export const JUEGOS = {
     { palabra: 'estereofon', pista: 'Bloque blanco que te frena en el arcade' },
     { palabra: 'gambito de dama', pista: 'Apertura de ajedrez con nombre de serie' },
     { palabra: 'grogu', pista: 'Pequeño, verde y fan de las galletas azules' },
+    { palabra: 'buenos dias', pista: 'Lo primero que me escribes' },
+    { palabra: 'te extraño', pista: 'Lo que más dices en semana de exámenes' },
+    { palabra: 'videollamada', pista: 'Cuando no nos podemos ver en persona' },
+    { palabra: 'quien cuelga primero', pista: 'La discusión que nadie gana' },
+    { palabra: 'foto juntos', pista: 'Lo que siempre te pido en las salidas' },
+    { palabra: 'aniversario', pista: 'La fecha que no se te puede olvidar' },
+    { palabra: 'palomitas', pista: 'No pueden faltar en la peli' },
+    { palabra: 'mensaje de buenas noches', pista: 'Lo último del día' },
+    { palabra: 'tomarnos de la mano', pista: 'Lo que hacemos al caminar' },
   ],
 
   /* -------------------------------------------------------------------
@@ -80,6 +89,8 @@ export const JUEGOS = {
     'reina', 'jaque', 'amigo', 'novio', 'cielo', 'cosi',
     'sushi', 'mabel', 'vader', 'sueño',
     'motor', 'insta', 'blitz', 'tacos', 'negra',
+    'citas', 'mimos', 'novia', 'manos', 'risas', 'fotos', 'memes',
+    'reels', 'cenar', 'salir', 'playa', 'carta', 'dulce', 'pizza', 'celos', 'chats',
   ],
 
   /* -------------------------------------------------------------------

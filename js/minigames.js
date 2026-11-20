@@ -83,17 +83,41 @@ const VILLAINS = [
   { name: 'Homelander', sprite: 'assets/homelander_v2.png' },
 ];
 
+const HANGMAN_KEY = 'pomodoroArcade.ahorcado';
+
 export class Hangman extends MiniGame {
   get maxFails() { return this.dif.ahorcadoFallos || 6; }
   get hintAfter() { return this.dif.ahorcadoPistaTrasFallos ?? 0; }
+  /** La palabra no se puede cambiar hasta ganar o perder. */
+  get canRestart() { return this.over; }
+
+  /** Partida a medias guardada (sobrevive a salir del juego y a recargar). */
+  #load() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(HANGMAN_KEY) || 'null');
+      const entry = saved && this.data.find((x) => x.palabra === saved.palabra);
+      if (!entry) return null;
+      return { entry, guessed: new Set(saved.guessed || []), villain: VILLAINS[saved.villain] || VILLAINS[0] };
+    } catch { return null; }
+  }
+  #save() {
+    try {
+      if (this.over) localStorage.removeItem(HANGMAN_KEY);
+      else localStorage.setItem(HANGMAN_KEY, JSON.stringify({
+        palabra: this.word, guessed: [...this.guessed], villain: VILLAINS.indexOf(this.villain),
+      }));
+    } catch { /* sin almacenamiento: no pasa nada */ }
+  }
 
   start() {
+    if (this.entry && !this.over) return;   // sigue la misma partida
+    const saved = this.#load();
     this.over = false;
-    this.entry = pickNew(this.data, this.entry);
+    this.entry = saved ? saved.entry : pickNew(this.data, this.entry);
     this.word = this.entry.palabra;          // ya viene en MAYÚSCULAS y sin tildes
-    this.guessed = new Set();
-    this.fails = 0;
-    this.villain = pick(VILLAINS);
+    this.guessed = saved ? saved.guessed : new Set();
+    this.fails = [...this.guessed].filter((ch) => !this.word.includes(ch)).length;
+    this.villain = saved ? saved.villain : pick(VILLAINS);
     this.root.innerHTML = `
       <p class="mg-hint hm-hint"></p>
       <div class="hm-track" aria-hidden="true">
@@ -128,13 +152,15 @@ export class Hangman extends MiniGame {
     if (solved) {
       this.$('.game-msg').textContent = '¡Malvavisco a salvo!';
       this.win();
+      this.#save();
     } else if (this.fails >= this.maxFails) {
       this.#paint(true);
       const msg = this.$('.game-msg');
       msg.textContent = `${this.villain.name} se comió el malvavisco. Era: ${this.word}`;
       msg.classList.add('is-error');
       this.lose();
-    }
+      this.#save();
+    } else this.#save();
   }
 
   #paint(reveal = false) {
