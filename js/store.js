@@ -37,7 +37,7 @@ export const COUPON_CATALOG = [
     title: 'Vale por un Brownie la próxima vez que nos veamos',
     note: 'Te prometo que estará rico.',
     emoji: '🍫',
-    price: 2,
+    price: 12,
     goal: { type: 'totalPomodoros', value: 2 },
   },
   {
@@ -45,7 +45,7 @@ export const COUPON_CATALOG = [
     title: 'Vale por unas Skittles',
     note: 'Saborea el arcoíris. Las llevo la próxima vez que nos veamos.',
     emoji: '🌈',
-    price: 2,
+    price: 12,
     goal: { type: 'mapDone', value: 'apodos' },
   },
   {
@@ -53,7 +53,7 @@ export const COUPON_CATALOG = [
     title: 'Vale por unas gomitas',
     note: 'Las que tú escojas. Prometo no robarte más de dos.',
     emoji: '🍬',
-    price: 2,
+    price: 12,
     goal: { type: 'totalPomodoros', value: 3 },
   },
   {
@@ -61,7 +61,7 @@ export const COUPON_CATALOG = [
     title: 'Vale por una Red Bull',
     note: 'Green Edition si la encuentro. Para tu próxima noche de estudio.',
     emoji: '🥫',
-    price: 3,
+    price: 13,
     goal: { type: 'dailyStreak', value: 2 },
   },
   {
@@ -69,7 +69,7 @@ export const COUPON_CATALOG = [
     title: 'Vale por ver 30 mins de Before Sunset juntos',
     note: 'Con mantita y sin mirar el celular.',
     emoji: '🎬',
-    price: 3,
+    price: 13,
     goal: { type: 'mapDone', value: 'carino' },
   },
   {
@@ -77,7 +77,7 @@ export const COUPON_CATALOG = [
     title: 'Hoy yo lavo los platos',
     note: 'Válido la próxima vez que cocinemos algo juntos.',
     emoji: '🍽️',
-    price: 4,
+    price: 14,
     goal: { type: 'dailyStreak', value: 3 },
   },
   {
@@ -85,7 +85,7 @@ export const COUPON_CATALOG = [
     title: 'Vale por un masaje de espalda de 5 minutos',
     note: 'Cortito pero con cariño. Ideal después de un bloque pesado.',
     emoji: '💆',
-    price: 2,
+    price: 12,
     goal: { type: 'totalPomodoros', value: 4 },
   },
   {
@@ -93,7 +93,7 @@ export const COUPON_CATALOG = [
     title: 'Vale por un masaje de espalda de 10 minutos',
     note: 'Para cuando la espalda ya no aguanta la silla.',
     emoji: '💆',
-    price: 3,
+    price: 13,
     goal: { type: 'arcadeScore', value: 250 },
   },
   {
@@ -101,7 +101,7 @@ export const COUPON_CATALOG = [
     title: 'Vale por un masaje de espalda de 15 minutos',
     note: '15 minutos, sin quejas de la masajista i promise.',
     emoji: '💆',
-    price: 5,
+    price: 15,
     goal: { type: 'arcadeScore', value: 400 },
   },
   {
@@ -109,7 +109,7 @@ export const COUPON_CATALOG = [
     title: 'El Favor Absoluto (Úsalo cuando quieras)',
     note: 'Lo que pidas. Sin preguntas. Úsalo con sabiduría y ten cuidado de desperdiciarlo.',
     emoji: '👑',
-    price: 13,
+    price: 23,
     goal: { type: 'legend', value: { pomodoros: 12, arcade: 700 } },
   },
 ];

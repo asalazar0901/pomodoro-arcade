@@ -25,16 +25,16 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
 
 | Cupón | Precio | Misión |
 |---|---|---|
-| Brownie | 2 🎟️ | 2 pomodoros en total |
-| Skittles | 2 🎟️ | Completar la sopa de letras del Mapa 1 (Apodos) |
-| Gomitas | 2 🎟️ | 3 pomodoros en total |
-| Red Bull | 3 🎟️ | Racha de 2 pomodoros en un mismo día |
-| 30 min de Before Sunset | 3 🎟️ | Completar la sopa de letras del Mapa 2 (Cariño) |
-| Hoy yo lavo los platos | 4 🎟️ | Racha de 3 pomodoros en un mismo día |
-| Masaje de 5 minutos | 2 🎟️ | 4 pomodoros en total |
-| Masaje de 10 minutos | 3 🎟️ | 250 puntos en el arcade |
-| Masaje de 15 minutos | 5 🎟️ | 400 puntos en el arcade |
-| El Favor Absoluto | 13 🎟️ | 12 pomodoros, 700 pts en arcade y las dos sopas de letras |
+| Brownie | 12 🎟️ | 2 pomodoros en total |
+| Skittles | 12 🎟️ | Completar la sopa de letras del Mapa 1 (Apodos) |
+| Gomitas | 12 🎟️ | 3 pomodoros en total |
+| Red Bull | 13 🎟️ | Racha de 2 pomodoros en un mismo día |
+| 30 min de Before Sunset | 13 🎟️ | Completar la sopa de letras del Mapa 2 (Cariño) |
+| Hoy yo lavo los platos | 14 🎟️ | Racha de 3 pomodoros en un mismo día |
+| Masaje de 5 minutos | 12 🎟️ | 4 pomodoros en total |
+| Masaje de 10 minutos | 13 🎟️ | 250 puntos en el arcade |
+| Masaje de 15 minutos | 15 🎟️ | 400 puntos en el arcade |
+| El Favor Absoluto | 23 🎟️ | 12 pomodoros, 700 pts en arcade y las dos sopas de letras |
 
 Para cambiar premios, precios o misiones edita el array `COUPON_CATALOG` en `js/store.js`.
 
