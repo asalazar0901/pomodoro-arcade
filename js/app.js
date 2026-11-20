@@ -186,7 +186,7 @@ function gameCards() {
     { key: 'ahorcado', emoji: '🍡', name: 'Salva el malvavisco', desc: 'Ahorcado con villanos', reward: 'al salvarlo' },
     { key: 'cosidle', emoji: '🟩', name: 'Cosi-dle', desc: `La palabra en ${gameData.dificultad.cosidleIntentos} intentos`, reward: 'al adivinarla' },
     ...(gameData.trivia.activo ? [{ key: 'trivia', emoji: '📝', name: 'Examen sorpresa', desc: gameData.trivia.titulo, reward: 'al aprobar' }] : []),
-    { key: 'ajedrez', emoji: '♟️', name: 'Reto de ajedrez', desc: 'Mate en 2, contra reloj', reward: 'al dar mate' },
+    { key: 'ajedrez', emoji: '♟️', name: 'Reto de ajedrez', desc: 'Mate en 6, contra reloj', reward: 'al dar mate' },
     { key: 'arcade', emoji: '👷', name: 'Arcade de supervivencia', desc: 'Snacks, jefes y Red Bull', reward: `a los ${ARCADE_TICKET_SCORE} pts` },
   ];
 }

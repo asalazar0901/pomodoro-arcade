@@ -14,7 +14,7 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
   - Salva el malvavisco: ahorcado donde un villano camina hacia el malvavisco con cada fallo. 4 fallos y la pista se abre hasta el segundo.
   - Cosi-dle: adivinar una palabra de 5 letras en 4 intentos, en modo difícil (hay que reusar las letras descubiertas).
   - Examen sorpresa: 7 preguntas de 8 segundos, se aprueba con 6. Las opciones salen revueltas.
-  - Reto de ajedrez: mate en 2 contra reloj (2 min, 1 intento). El rival contesta solo. Posiciones verificadas con motor.
+  - Reto de ajedrez: 15 mates en 6 contra reloj (10 min, 2 intentos). El rival contesta solo con la defensa que más aguanta. Posiciones verificadas por computadora.
   - Sopa de letras con generador automático (Mapa 1: Apodos, Mapa 2: Cariño): cuadrícula grande, palabras señuelo, solo se ve la inicial de cada palabra y hay 4 minutos. Completarla da +1 🎟️.
   - Arcade de supervivencia en Canvas. Llegar a 300 puntos da +1 🎟️.
   - Máximo 1 ticket por juego en cada descanso.
@@ -44,7 +44,7 @@ Todas las palabras, pistas, preguntas, retos de ajedrez y sopas de letras viven 
 
 La dificultad de todos (fallos, intentos, tiempos, señuelos) está en el bloque `dificultad` al inicio de ese archivo. Si algo se vuelve imposible, sube ahí los números.
 
-Para los retos de ajedrez, arma la posición en <https://lichess.org/editor>, copia el código FEN que aparece abajo y escribe la línea como lista de jugadas `casilla-casilla`: `['f4-f7', 'h7-h8', 'f7-g7']` (tu jugada, la respuesta del rival, tu mate). Un mate en 1 lleva una sola: `['h5-f7']`.
+Para los retos de ajedrez, arma la posición en <https://lichess.org/editor>, copia el código FEN que aparece abajo y escribe la línea como lista de jugadas `casilla-casilla`: `['f4-f7', 'h7-h8', 'f7-g7']` (tu jugada, la respuesta del rival, tu jugada, y así hasta el mate). Un mate en 6 lleva 11 jugadas.
 
 ## Editar notas y eventos
 
