@@ -95,6 +95,7 @@ export const JUEGOS = {
 
   /* -------------------------------------------------------------------
      3. EXAMEN SORPRESA (trivia)
+       activo    -> false: el examen no aparece en el menú. true: aparece
        titulo    -> el nombre del examen
        segundos  -> tiempo para responder cada pregunta
        cuantas   -> cuántas preguntas salen en cada intento (al azar)
@@ -103,6 +104,7 @@ export const JUEGOS = {
      En el juego las opciones salen revueltas, así que no se puede memorizar la letra.
      ------------------------------------------------------------------- */
   trivia: {
+    activo: false,
     titulo: 'Física 3: Dinámica de Nuestra Relación',
     segundos: 8,
     cuantas: 7,

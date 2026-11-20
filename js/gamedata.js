@@ -86,6 +86,7 @@ function clean(raw) {
     && 'ABCD'.indexOf(String(q.correcta).toUpperCase()) >= 0
     && 'ABCD'.indexOf(String(q.correcta).toUpperCase()) < q.opciones.length);
   data.trivia = {
+    activo: t.activo !== false,
     titulo: String(t.titulo || FALLBACK.trivia.titulo),
     segundos: Math.max(5, Number(t.segundos) || 15),
     cuantas: Math.max(1, Math.min(Number(t.cuantas) || 5, preguntas.length || 1)),
@@ -112,7 +113,11 @@ function clean(raw) {
   for (const key of ['ahorcado', 'cosidle', 'ajedrez', 'sopa']) {
     if (!isList(data[key])) { data[key] = clean0(key); usedFallback.push(key); }
   }
-  if (!isList(data.trivia.preguntas)) { data.trivia = clean0('trivia'); usedFallback.push('trivia'); }
+  if (!isList(data.trivia.preguntas)) {
+    const { activo } = data.trivia;
+    data.trivia = { ...clean0('trivia'), activo };
+    if (activo) usedFallback.push('trivia');
+  }
   return { data, usedFallback };
 }
 
