@@ -338,6 +338,10 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
   font-size: 20px; text-transform: uppercase;
 }
 .ws-words li.found { background: var(--latte); text-decoration: line-through; opacity: .75; }
+.ws-cell.missed { background: #f6c9c3; color: var(--danger); }
+.ws-words li.missed { color: var(--danger); border-color: var(--danger); }
+#ws-timer.is-error { color: var(--danger); }
+.hm-hint { min-height: 1.4em; }
 
 /* ---- Arcade ---- */
 .hud {

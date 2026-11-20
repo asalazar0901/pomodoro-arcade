@@ -1,13 +1,13 @@
 /* =====================================================================
    minigames.js — Minijuegos de palabras, trivia y ajedrez.
      - Hangman      "Salva el Malvavisco" (ahorcado)
-     - Cosidle      adivina la palabra de 5 letras en 6 intentos
+     - Cosidle      adivina la palabra de 5 letras
      - Trivia       examen sorpresa de opción múltiple con tiempo
-     - ChessPuzzle  mate en 1 sobre un tablero dibujado desde un FEN
+     - ChessPuzzle  mate en N jugadas sobre un tablero dibujado desde un FEN
 
    Todos reciben sus datos de public/contenido/juegos.js (ver gamedata.js)
-   y comparten la misma forma:
-       const juego = new Hangman(contenedor, datos, { onWin, onLose, sfx });
+   y comparten la misma forma. `dif` es el bloque `dificultad` de juegos.js:
+       const juego = new Hangman(contenedor, datos, { onWin, onLose, sfx }, dif);
        juego.start();     // partida nueva
        juego.destroy();   // al salir (quita teclado y temporizadores)
    ===================================================================== */
@@ -16,6 +16,16 @@ import { normalizeWord } from './gamedata.js';
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+/** Copia revuelta (Fisher-Yates). */
+function shuffle(list) {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 /** Elige un elemento al azar evitando repetir el anterior. */
 function pickNew(list, previous) {
@@ -29,10 +39,11 @@ function pickNew(list, previous) {
    Base común: contenedor, hooks y teclado físico
    --------------------------------------------------------------------- */
 class MiniGame {
-  constructor(root, data, hooks = {}) {
+  constructor(root, data, hooks = {}, dif = {}) {
     this.root = root;
     this.data = data;
     this.hooks = hooks;
+    this.dif = dif;
     this.over = false;
     this._onKey = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -73,7 +84,8 @@ const VILLAINS = [
 ];
 
 export class Hangman extends MiniGame {
-  static MAX_FAILS = 6;
+  get maxFails() { return this.dif.ahorcadoFallos || 6; }
+  get hintAfter() { return this.dif.ahorcadoPistaTrasFallos ?? 0; }
 
   start() {
     this.over = false;
@@ -83,7 +95,7 @@ export class Hangman extends MiniGame {
     this.fails = 0;
     this.villain = pick(VILLAINS);
     this.root.innerHTML = `
-      <p class="mg-hint"><strong>Pista:</strong> ${escapeHtml(this.entry.pista || 'Sin pista. Suerte.')}</p>
+      <p class="mg-hint hm-hint"></p>
       <div class="hm-track" aria-hidden="true">
         <div class="hm-villain" style="background-image:url('${this.villain.sprite}')"></div>
         <img class="hm-prize" src="assets/malvavisco_v2.png" alt="" />
@@ -116,7 +128,7 @@ export class Hangman extends MiniGame {
     if (solved) {
       this.$('.game-msg').textContent = '¡Malvavisco a salvo!';
       this.win();
-    } else if (this.fails >= Hangman.MAX_FAILS) {
+    } else if (this.fails >= this.maxFails) {
       this.#paint(true);
       const msg = this.$('.game-msg');
       msg.textContent = `${this.villain.name} se comió el malvavisco. Era: ${this.word}`;
@@ -126,17 +138,22 @@ export class Hangman extends MiniGame {
   }
 
   #paint(reveal = false) {
+    const lockedHint = this.fails < this.hintAfter && !reveal;
+    const left0 = this.hintAfter - this.fails;
+    this.$('.hm-hint').innerHTML = lockedHint
+      ? `🔒 <strong>Pista bloqueada:</strong> se abre con ${left0} fallo${left0 === 1 ? '' : 's'} más.`
+      : `<strong>Pista:</strong> ${escapeHtml(this.entry.pista || 'Sin pista. Suerte.')}`;
     this.$('.hm-word').innerHTML = [...this.word].map((ch) => {
       if (ch === ' ') return '<span class="hm-gap"></span>';
       const shown = this.guessed.has(ch) || reveal;
       return `<span class="hm-letter ${shown && !this.guessed.has(ch) ? 'is-missed' : ''}">${shown ? ch : ''}</span>`;
     }).join('');
-    const left = Hangman.MAX_FAILS - this.fails;
+    const left = this.maxFails - this.fails;
     this.$('.mg-status').textContent = left > 0
       ? `${this.villain.name} está a ${left} paso${left === 1 ? '' : 's'} del malvavisco.`
       : `${this.villain.name} llegó al malvavisco.`;
-    this.$('.hm-villain').style.left = `calc(${(this.fails / Hangman.MAX_FAILS) * 100}% - ${(this.fails / Hangman.MAX_FAILS) * 96}px)`;
-    this.$('.hm-track').classList.toggle('is-lost', this.fails >= Hangman.MAX_FAILS);
+    this.$('.hm-villain').style.left = `calc(${(this.fails / this.maxFails) * 100}% - ${(this.fails / this.maxFails) * 96}px)`;
+    this.$('.hm-track').classList.toggle('is-lost', this.fails >= this.maxFails);
     this.root.querySelectorAll('.kb-key').forEach((btn) => {
       const k = btn.dataset.key;
       btn.disabled = this.guessed.has(k);
@@ -150,8 +167,8 @@ export class Hangman extends MiniGame {
    2. COSI-DLE: palabra de 5 letras en 6 intentos
    ===================================================================== */
 export class Cosidle extends MiniGame {
-  static TRIES = 6;
   static LENGTH = 5;
+  get tries() { return this.dif.cosidleIntentos || 6; }
 
   start() {
     this.over = false;
@@ -160,7 +177,7 @@ export class Cosidle extends MiniGame {
     this.current = '';
     this.keyState = {};    // mejor estado conocido de cada letra
     this.root.innerHTML = `
-      <p class="mg-hint">Adivina la palabra de ${Cosidle.LENGTH} letras en ${Cosidle.TRIES} intentos.
+      <p class="mg-hint">Adivina la palabra de ${Cosidle.LENGTH} letras en ${this.tries} intentos.${this.dif.cosidleModoDificil ? ' <strong>Modo difícil:</strong> las letras que ya descubriste se tienen que usar, y las verdes en su lugar.' : ''}
         <span class="cd-legend"><i class="cd-ok"></i> lugar correcto <i class="cd-near"></i> está, en otro lugar <i class="cd-no"></i> no está</span></p>
       <div class="cd-grid" aria-label="Intentos"></div>
       <p class="game-msg" aria-live="polite"></p>
@@ -212,6 +229,13 @@ export class Cosidle extends MiniGame {
       return;
     }
     const guess = this.current;
+    const broken = this.dif.cosidleModoDificil && this.#hardModeError(guess);
+    if (broken) {
+      msg.textContent = broken;
+      msg.classList.add('is-error');
+      this.sfx('hit');
+      return;
+    }
     const marks = Cosidle.score(guess, this.word);
     this.rows.push({ guess, marks });
     this.current = '';
@@ -224,16 +248,31 @@ export class Cosidle extends MiniGame {
     if (guess === this.word) {
       msg.textContent = `¡Era ${this.word}! Lo lograste en ${this.rows.length} intento${this.rows.length === 1 ? '' : 's'}.`;
       this.win();
-    } else if (this.rows.length >= Cosidle.TRIES) {
+    } else if (this.rows.length >= this.tries) {
       msg.textContent = `Se acabaron los intentos. Era: ${this.word}`;
       msg.classList.add('is-error');
       this.lose();
     } else this.sfx('word');
   }
 
+  /** Modo difícil: reusar las pistas de los intentos anteriores. */
+  #hardModeError(guess) {
+    for (const { guess: prev, marks } of this.rows) {
+      for (let i = 0; i < marks.length; i++) {
+        if (marks[i] === 'ok' && guess[i] !== prev[i]) return `Modo difícil: la letra ${i + 1} tiene que ser ${prev[i]}.`;
+      }
+      const need = {};
+      marks.forEach((m, i) => { if (m !== 'no') need[prev[i]] = (need[prev[i]] || 0) + 1; });
+      for (const [ch, n] of Object.entries(need)) {
+        if ([...guess].filter((g) => g === ch).length < n) return `Modo difícil: tu palabra tiene que llevar ${ch}.`;
+      }
+    }
+    return '';
+  }
+
   #paint() {
     let html = '';
-    for (let r = 0; r < Cosidle.TRIES; r++) {
+    for (let r = 0; r < this.tries; r++) {
       const row = this.rows[r];
       const text = row ? row.guess : r === this.rows.length ? this.current : '';
       for (let c = 0; c < Cosidle.LENGTH; c++) {
@@ -259,7 +298,12 @@ export class Trivia extends MiniGame {
     clearInterval(this.interval);
     clearTimeout(this.timeout);
     const { preguntas, cuantas } = this.data;
-    this.questions = [...preguntas].sort(() => Math.random() - 0.5).slice(0, cuantas);
+    this.questions = shuffle(preguntas).slice(0, cuantas).map((q) => {
+      // Las opciones también se revuelven: memorizar "era la B" no sirve
+      const right = 'ABCD'.indexOf(String(q.correcta).toUpperCase());
+      const order = shuffle(q.opciones.slice(0, 4).map((text, i) => ({ text, ok: i === right })));
+      return { pregunta: q.pregunta, opciones: order.map((o) => o.text), right: order.findIndex((o) => o.ok) };
+    });
     this.index = 0;
     this.correct = 0;
     this.#showQuestion();
@@ -306,7 +350,7 @@ export class Trivia extends MiniGame {
     this.locked = true;
     clearInterval(this.interval);
     const q = this.questions[this.index];
-    const right = 'ABCD'.indexOf(String(q.correcta).toUpperCase());
+    const right = q.right;
     const ok = choice === right;
     if (ok) { this.correct += 1; this.sfx('word'); } else this.sfx('hit');
 
@@ -341,7 +385,7 @@ export class Trivia extends MiniGame {
 }
 
 /* =====================================================================
-   4. RETO DE AJEDREZ: mate en 1 (tablero desde FEN)
+   4. RETO DE AJEDREZ: mate en N (tablero desde FEN)
    ===================================================================== */
 const PIECES = { k: '♚\uFE0E', q: '♛\uFE0E', r: '♜\uFE0E', b: '♝\uFE0E', n: '♞\uFE0E', p: '♟\uFE0E' };
 const PIECE_NAMES = { k: 'rey', q: 'dama', r: 'torre', b: 'alfil', n: 'caballo', p: 'peón' };
@@ -363,20 +407,26 @@ export function parseFen(fen) {
 const squareName = (r, c) => `${'abcdefgh'[c]}${8 - r}`;
 
 export class ChessPuzzle extends MiniGame {
-  static ATTEMPTS = 3;
+  get maxAttempts() { return this.dif.ajedrezIntentos || 3; }
 
   start() {
     this.over = false;
+    clearInterval(this.interval);
+    clearTimeout(this.timeout);
     this.puzzle = pickNew(this.data, this.puzzle);
     const { board, turn } = parseFen(this.puzzle.fen);
     this.board = board;
-    this.turn = turn;
+    this.turn = turn;          // bando de quien resuelve (no cambia)
     this.selected = null;
-    this.attempts = ChessPuzzle.ATTEMPTS;
-    this.solution = this.puzzle.solucion.toLowerCase().replace(/\s/g, '');
+    this.lastMove = null;
+    this.step = 0;             // jugada actual dentro de `solution`
+    this.waiting = false;
+    this.attempts = this.maxAttempts;
+    this.solution = this.puzzle.solucion;   // ['f4-f7', 'h7-h8', 'f7-g7']
+    const n = Math.ceil(this.solution.length / 2);
     this.root.innerHTML = `
       <p class="tv-title">♟️ ${escapeHtml(this.puzzle.titulo || 'Reto de ajedrez')}</p>
-      <p class="mg-hint">Juegan <strong>${turn === 'w' ? 'blancas' : 'negras'}</strong> y dan mate en 1. Toca la pieza y luego la casilla de destino.</p>
+      <p class="mg-hint">Juegan <strong>${turn === 'w' ? 'blancas' : 'negras'}</strong> y dan mate en ${n}.${n > 1 ? ' El rival contesta solo después de tu jugada.' : ''} Toca la pieza y luego la casilla de destino.</p>
       <div class="ch-board" role="grid" aria-label="Tablero de ajedrez"></div>
       <p class="mg-status" aria-live="polite"></p>
       <p class="game-msg" aria-live="polite"></p>`;
@@ -384,6 +434,16 @@ export class ChessPuzzle extends MiniGame {
       const sq = e.target.closest('[data-r]');
       if (sq) this.tap(Number(sq.dataset.r), Number(sq.dataset.c));
     });
+
+    const seconds = this.dif.ajedrezSegundos || 0;
+    this.deadline = seconds ? Date.now() + seconds * 1000 : 0;
+    if (this.deadline) {
+      this.interval = setInterval(() => {
+        if (this.over) return clearInterval(this.interval);
+        if (Date.now() >= this.deadline) this.#fail('Se acabó el tiempo.');
+        else this.#status();
+      }, 250);
+    }
     this.#paint();
   }
 
@@ -392,8 +452,17 @@ export class ChessPuzzle extends MiniGame {
     return (piece === piece.toUpperCase()) === (this.turn === 'w');
   }
 
+  #apply(move) {
+    const [from, to] = move.split('-');
+    const fc = from.charCodeAt(0) - 97; const fr = 8 - Number(from[1]);
+    const tc = to.charCodeAt(0) - 97; const tr = 8 - Number(to[1]);
+    this.board[tr][tc] = this.board[fr][fc];
+    this.board[fr][fc] = null;
+    this.lastMove = [[fr, fc], [tr, tc]];
+  }
+
   tap(r, c) {
-    if (this.over) return;
+    if (this.over || this.waiting) return;
     const piece = this.board[r][c];
     const msg = this.$('.game-msg');
     msg.textContent = '';
@@ -413,31 +482,61 @@ export class ChessPuzzle extends MiniGame {
 
     const [fr, fc] = this.selected;
     const move = `${squareName(fr, fc)}-${squareName(r, c)}`;
-    if (move === this.solution) {
-      this.board[r][c] = this.board[fr][fc];
-      this.board[fr][fc] = null;
-      this.selected = null;
-      this.lastMove = [[fr, fc], [r, c]];
+    this.selected = null;
+    if (move !== this.solution[this.step]) {
+      this.attempts -= 1;
+      this.sfx('hit');
+      if (this.attempts <= 0) { this.#fail('Esa no era.'); return; }
+      this.#paint();
+      msg.textContent = 'Esa no es la jugada. Calcula otra vez.';
+      msg.classList.add('is-error');
+      return;
+    }
+
+    this.#apply(move);
+    this.step += 1;
+    if (this.step >= this.solution.length) {
+      clearInterval(this.interval);
+      this.over = true;
       this.#paint();
       msg.textContent = `¡Jaque mate! ${this.puzzle.nota || ''}`;
       this.win();
       return;
     }
+    // Contesta el rival
+    this.sfx('word');
+    this.waiting = true;
+    this.#paint();
+    msg.textContent = 'Bien. El rival piensa...';
+    this.timeout = setTimeout(() => {
+      this.waiting = false;
+      if (this.over) return;
+      this.#apply(this.solution[this.step]);
+      this.step += 1;
+      this.#paint();
+      msg.textContent = 'Te toca. Remata.';
+    }, 700);
+  }
 
-    this.attempts -= 1;
-    this.selected = null;
-    this.sfx('hit');
-    if (this.attempts <= 0) {
-      const [from, to] = this.solution.split('-');
-      this.#paint();
-      msg.textContent = `Sin intentos. La solución era ${from} a ${to}. ${this.puzzle.nota || ''}`;
-      msg.classList.add('is-error');
-      this.lose();
-    } else {
-      this.#paint();
-      msg.textContent = 'Esa no da mate. Calcula otra vez.';
-      msg.classList.add('is-error');
+  #fail(reason) {
+    clearInterval(this.interval);
+    this.over = true;
+    this.#paint();
+    const rest = this.solution.slice(this.step).map((m) => m.replace('-', '→')).join(', ');
+    const msg = this.$('.game-msg');
+    msg.textContent = `${reason} La línea era: ${rest}. ${this.puzzle.nota || ''}`;
+    msg.classList.add('is-error');
+    this.lose();
+  }
+
+  #status() {
+    const left = Math.max(0, this.attempts);
+    let text = `Intentos: ${'●'.repeat(left)}${'○'.repeat(Math.max(0, this.maxAttempts - left))}`;
+    if (this.deadline) {
+      const s = Math.max(0, Math.ceil((this.deadline - Date.now()) / 1000));
+      text += ` · ⏱ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     }
+    this.$('.mg-status').textContent = text;
   }
 
   #paint() {
@@ -456,7 +555,6 @@ export class ChessPuzzle extends MiniGame {
       }
     }
     this.$('.ch-board').innerHTML = html;
-    this.lastMove = this.over ? this.lastMove : null;
-    this.$('.mg-status').textContent = `Intentos: ${'●'.repeat(Math.max(0, this.attempts))}${'○'.repeat(ChessPuzzle.ATTEMPTS - Math.max(0, this.attempts))}`;
+    this.#status();
   }
 }

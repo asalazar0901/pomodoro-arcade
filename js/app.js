@@ -184,9 +184,9 @@ function gameCards() {
   return [
     ...gameData.sopa.map((m) => ({ key: `ws:${m.id}`, emoji: '🔤', name: 'Sopa de letras', desc: m.titulo, reward: 'al completarla' })),
     { key: 'ahorcado', emoji: '🍡', name: 'Salva el malvavisco', desc: 'Ahorcado con villanos', reward: 'al salvarlo' },
-    { key: 'cosidle', emoji: '🟩', name: 'Cosi-dle', desc: 'La palabra en 6 intentos', reward: 'al adivinarla' },
+    { key: 'cosidle', emoji: '🟩', name: 'Cosi-dle', desc: `La palabra en ${gameData.dificultad.cosidleIntentos} intentos`, reward: 'al adivinarla' },
     { key: 'trivia', emoji: '📝', name: 'Examen sorpresa', desc: gameData.trivia.titulo, reward: 'al aprobar' },
-    { key: 'ajedrez', emoji: '♟️', name: 'Reto de ajedrez', desc: 'Mate en 1', reward: 'al dar mate' },
+    { key: 'ajedrez', emoji: '♟️', name: 'Reto de ajedrez', desc: 'Mate en 2, contra reloj', reward: 'al dar mate' },
     { key: 'arcade', emoji: '👷', name: 'Arcade de supervivencia', desc: 'Snacks, jefes y Red Bull', reward: `a los ${ARCADE_TICKET_SCORE} pts` },
   ];
 }
@@ -231,10 +231,10 @@ $('#game-menu').addEventListener('click', (e) => {
 
 /* ---- Ahorcado, Cosi-dle, examen sorpresa y ajedrez ---- */
 const MINI_GAMES = {
-  ahorcado: { title: 'Salva el malvavisco', make: (root, hooks) => new Hangman(root, gameData.ahorcado, hooks) },
-  cosidle: { title: 'Cosi-dle', make: (root, hooks) => new Cosidle(root, gameData.cosidle, hooks) },
-  trivia: { title: 'Examen sorpresa', make: (root, hooks) => new Trivia(root, gameData.trivia, hooks) },
-  ajedrez: { title: 'Reto de ajedrez', make: (root, hooks) => new ChessPuzzle(root, gameData.ajedrez, hooks) },
+  ahorcado: { title: 'Salva el malvavisco', make: (root, hooks) => new Hangman(root, gameData.ahorcado, hooks, gameData.dificultad) },
+  cosidle: { title: 'Cosi-dle', make: (root, hooks) => new Cosidle(root, gameData.cosidle, hooks, gameData.dificultad) },
+  trivia: { title: 'Examen sorpresa', make: (root, hooks) => new Trivia(root, gameData.trivia, hooks, gameData.dificultad) },
+  ajedrez: { title: 'Reto de ajedrez', make: (root, hooks) => new ChessPuzzle(root, gameData.ajedrez, hooks, gameData.dificultad) },
 };
 let currentMini = null;
 
@@ -273,9 +273,13 @@ $('#mini-new').addEventListener('click', () => {
 
 /* ---- Sopa de letras ---- */
 const wordsearch = new WordSearch(
-  { grid: $('#ws-grid'), words: $('#ws-words'), msg: $('#ws-msg'), title: $('#ws-title') },
+  { grid: $('#ws-grid'), words: $('#ws-words'), msg: $('#ws-msg'), title: $('#ws-title'), timer: $('#ws-timer') },
   {
     onWordFound() { audio.play('word'); },
+    onTimeUp() {
+      audio.play('gameOver');
+      $('#ws-msg').textContent = 'Se acabó el tiempo. En rojo las que faltaron. Pulsa ↻ Nueva para otra.';
+    },
     onComplete(mapId) {
       store.recordMapDone(mapId);
       audio.play('win');
@@ -534,7 +538,7 @@ const syllabus = initSyllabus();
 const agenda = await initAgenda(); // lee public/contenido/notas.js y eventos.js
 store.subscribe(() => { renderStats(); renderShop(); renderOwned(); syllabus.render(); agenda.render(); });
 const { data: gameData, error: gameDataError } = await loadGameData(); // public/contenido/juegos.js
-setMaps(gameData.sopa);
+setMaps(gameData.sopa, gameData.dificultad);
 if (gameDataError) { $('#games-error').hidden = false; $('#games-error').textContent = gameDataError; }
 renderGameMenu();
 renderSettings();

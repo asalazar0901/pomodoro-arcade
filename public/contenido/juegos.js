@@ -27,8 +27,34 @@ export const JUEGOS = {
   },
 
   /* -------------------------------------------------------------------
+     DIFICULTAD (cambia solo los números o true/false)
+     Si un juego se le hace imposible, súbele aquí los intentos o el tiempo.
+       ahorcadoFallos          -> fallos antes de que se coman el malvavisco
+       ahorcadoPistaTrasFallos -> la pista sale después de estos fallos (0 = desde el inicio)
+       cosidleIntentos         -> intentos para adivinar la palabra
+       cosidleModoDificil      -> true: tiene que reusar las letras que ya descubrió
+       ajedrezIntentos         -> jugadas equivocadas permitidas
+       ajedrezSegundos         -> tiempo para resolver (0 = sin reloj)
+       sopaOcultarPalabras     -> true: solo ve la inicial y cuántas letras lleva
+       sopaSenuelos            -> true: cuadrícula más grande y palabras falsas parecidas
+       sopaSegundos            -> tiempo para encontrar todo (0 = sin reloj)
+     ------------------------------------------------------------------- */
+  dificultad: {
+    ahorcadoFallos: 4,
+    ahorcadoPistaTrasFallos: 2,
+    cosidleIntentos: 4,
+    cosidleModoDificil: true,
+    ajedrezIntentos: 1,
+    ajedrezSegundos: 120,
+    sopaOcultarPalabras: true,
+    sopaSenuelos: true,
+    sopaSegundos: 240,
+  },
+
+  /* -------------------------------------------------------------------
      1. AHORCADO: "Salva el Malvavisco"
-     Cada fallo acerca al villano al malvavisco. Tiene 6 fallos.
+     Cada fallo acerca al villano al malvavisco. Los fallos permitidos
+     se cambian arriba, en DIFICULTAD.
        palabra -> lo que hay que adivinar (puede llevar espacios)
        pista   -> la ayuda que se muestra
      ------------------------------------------------------------------- */
@@ -45,7 +71,7 @@ export const JUEGOS = {
 
   /* -------------------------------------------------------------------
      2. COSI-DLE
-     Adivina la palabra en 6 intentos.
+     Adivina la palabra (los intentos se cambian arriba, en DIFICULTAD).
      IMPORTANTE: cada palabra debe tener exactamente 5 letras y no llevar
      espacios. Las que no cumplan se ignoran solas.
      ------------------------------------------------------------------- */
@@ -63,12 +89,13 @@ export const JUEGOS = {
        cuantas   -> cuántas preguntas salen en cada intento (al azar)
        aprobar   -> cuántas hay que acertar para ganar el ticket
      Cada pregunta lleva 4 opciones y la letra de la correcta: 'A', 'B', 'C' o 'D'.
+     En el juego las opciones salen revueltas, así que no se puede memorizar la letra.
      ------------------------------------------------------------------- */
   trivia: {
     titulo: 'Física 3: Dinámica de Nuestra Relación',
-    segundos: 15,
-    cuantas: 5,
-    aprobar: 3,
+    segundos: 8,
+    cuantas: 7,
+    aprobar: 6,
     preguntas: [
       {
         pregunta: 'Si no me pongo alarma un domingo, ¿a qué hora me despierto por inercia?',
@@ -141,37 +168,66 @@ export const JUEGOS = {
   },
 
   /* -------------------------------------------------------------------
-     4. RETO DE AJEDREZ (mate en 1)
+     4. RETO DE AJEDREZ (mate en 2)
        titulo    -> texto que se muestra arriba del tablero
        fen       -> la posición en código FEN (se copia de lichess.org/editor)
-       solucion  -> casilla de salida, guion, casilla de llegada: 'h5-f7'
-       nota      -> (opcional) explicación que sale al resolverlo
+       solucion  -> la línea completa, cada jugada como 'salida-llegada':
+                    [tu jugada, respuesta del rival, tu jugada de mate]
+                    El rival juega solo. Para un mate en 1 basta una: ['h5-f7']
+       nota      -> (opcional) texto que sale al terminar
      El turno lo dice el propio FEN: la letra "w" es blancas y "b" es negras.
+     Todos estos los revisó un motor: la primera jugada es la única que fuerza mate.
      ------------------------------------------------------------------- */
   ajedrez: [
     {
-      titulo: 'Mate del pastor',
-      fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4',
-      solucion: 'h5-f7',
-      nota: 'La dama toma en f7 protegida por el alfil.',
+      titulo: 'Mate en 2 · Reto 1',
+      fen: '8/K5pk/7P/7P/n4Q1R/5Bp1/3p1r2/8 w',
+      solucion: ['f4-f7', 'h7-h8', 'f7-g7'],
     },
     {
-      titulo: 'Mate del pasillo',
-      fen: '6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',
-      solucion: 'e1-e8',
-      nota: 'Los propios peones encierran al rey.',
+      titulo: 'Mate en 2 · Reto 2',
+      fen: '8/K6n/8/k1NP3B/8/rp2P3/p7/5Q1n w',
+      solucion: ['f1-c4', 'h7-f8', 'c5-b7'],
     },
     {
-      titulo: 'Mate del loco',
-      fen: 'rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq g3 0 2',
-      solucion: 'd8-h4',
-      nota: 'El mate más rápido del ajedrez.',
+      titulo: 'Mate en 2 · Reto 3',
+      fen: '3q4/6p1/3Pr3/1P5p/Nr1ppBPP/K7/4k1P1/8 b',
+      solucion: ['d8-a5', 'a3-a2', 'a5-a4'],
     },
     {
-      titulo: 'Mate de la coz',
-      fen: '6rk/6pp/8/6N1/8/8/8/6K1 w - - 0 1',
-      solucion: 'g5-f7',
-      nota: 'El caballo da mate y el rey queda encerrado por sus propias piezas.',
+      titulo: 'Mate en 2 · Reto 4',
+      fen: 'k7/P3P1n1/2P1N3/5p1p/3pP2p/4b2K/8/7Q w',
+      solucion: ['h1-b1', 'a8-a7', 'b1-b7'],
+    },
+    {
+      titulo: 'Mate en 2 · Reto 5',
+      fen: '8/3p4/p7/4p2Q/p2P3b/3R3B/P7/r1k4K w',
+      solucion: ['h5-e2', 'h4-d8', 'd3-d1'],
+    },
+    {
+      titulo: 'Mate en 2 · Reto 6',
+      fen: '8/2q5/3P1k2/2p1p2K/4R1pP/b2n4/7p/3B4 b',
+      solucion: ['c7-g7', 'd1-e2', 'g7-g6'],
+    },
+    {
+      titulo: 'Mate en 2 · Reto 7',
+      fen: '8/5p2/1Q6/4PK2/rN6/5k1P/2pP4/2b4R w',
+      solucion: ['h1-h2', 'a4-a3', 'b6-f2'],
+    },
+    {
+      titulo: 'Mate en 2 · Reto 8',
+      fen: 'k7/P2P3B/2KR3b/5B2/1p3p2/p4P2/1P1p4/4n3 w',
+      solucion: ['c6-b6', 'h6-g5', 'f5-e4'],
+    },
+    {
+      titulo: 'Mate en 2 · Reto 9',
+      fen: '1B4b1/8/3P4/2NPn3/6p1/5P1P/k4rp1/6K1 b',
+      solucion: ['g4-g3', 'c5-d3', 'e5-f3'],
+    },
+    {
+      titulo: 'Mate en 2 · Reto 10',
+      fen: 'K3k3/Q5n1/8/2p1P1N1/1B6/8/6pP/b7 w',
+      solucion: ['b4-a5', 'e8-f8', 'a7-f7'],
     },
   ],
 

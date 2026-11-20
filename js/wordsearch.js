@@ -4,14 +4,20 @@
 
 /* Mapas (niveles). Se llenan desde public/contenido/juegos.js con setMaps(). */
 export const WORD_MAPS = {};
+let DIF = {};
 
-/** Recibe la lista `sopa` de juegos.js y calcula el tamaño de cada cuadrícula. */
-export function setMaps(list) {
+/**
+ * Recibe la lista `sopa` y el bloque `dificultad` de juegos.js y calcula
+ * el tamaño de cada cuadrícula. Con señuelos la cuadrícula crece.
+ */
+export function setMaps(list, dif = {}) {
+  DIF = dif || {};
   Object.keys(WORD_MAPS).forEach((k) => delete WORD_MAPS[k]);
   for (const m of list) {
     const longest = Math.max(...m.palabras.map((w) => w.length));
     const letters = m.palabras.reduce((n, w) => n + w.length, 0);
-    const size = Math.max(8, Math.min(15, Math.max(longest + 2, Math.ceil(Math.sqrt(letters * 2.6)))));
+    const base = Math.max(longest + 2, Math.ceil(Math.sqrt(letters * 2.6))) + (DIF.sopaSenuelos ? 4 : 0);
+    const size = Math.max(8, Math.min(15, base));
     WORD_MAPS[m.id] = { title: m.titulo, size, words: m.palabras };
   }
 }
@@ -24,11 +30,48 @@ const DIRECTIONS = [
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const rand = (n) => Math.floor(Math.random() * n);
 
+/** Cuántas veces aparece `word` en la cuadrícula (en las 8 direcciones). */
+function countWord(grid, word) {
+  const n = grid.length;
+  let count = 0;
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (grid[r][c] !== word[0]) continue;
+      for (const [dr, dc] of DIRECTIONS) {
+        let i = 1;
+        while (i < word.length) {
+          const rr = r + dr * i; const cc = c + dc * i;
+          if (rr < 0 || rr >= n || cc < 0 || cc >= n || grid[rr][cc] !== word[i]) break;
+          i += 1;
+        }
+        if (i === word.length) count += 1;
+      }
+    }
+  }
+  return word.length > 1 && [...word].reverse().join('') === word ? count / 2 : count;
+}
+
+/** Palabras a medias o con una letra cambiada, para despistar. */
+function makeDecoys(words) {
+  const decoys = [];
+  for (const w of words) {
+    if (w.length < 4) continue;
+    decoys.push(w.slice(0, -1));                                       // le falta la última
+    const i = 1 + rand(w.length - 2);
+    let other;
+    do { other = w[rand(w.length)]; } while (other === w[i] && new Set(w).size > 1);
+    decoys.push(w.slice(0, i) + other + w.slice(i + 1));                 // una letra cambiada
+  }
+  return decoys;
+}
+
 /**
  * Genera una cuadrícula con todas las palabras colocadas.
+ * Con `hard`, rellena con letras de las mismas palabras y siembra señuelos,
+ * cuidando que cada palabra real aparezca una sola vez.
  * @returns {{grid: string[][], placements: {word, cells: [r,c][]}[]}}
  */
-export function generatePuzzle(words, size) {
+export function generatePuzzle(words, size, hard = false) {
   const list = words.map((w) => w.toUpperCase()).sort((a, b) => b.length - a.length);
 
   for (let attempt = 0; attempt < 200; attempt++) {
@@ -65,12 +108,35 @@ export function generatePuzzle(words, size) {
     }
 
     if (!ok) continue;
-    // Relleno con letras al azar
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        if (!grid[r][c]) grid[r][c] = ALPHABET[rand(ALPHABET.length)];
+
+    if (hard) {
+      // Señuelos: se colocan donde quepan (si no caben, no pasa nada)
+      for (const decoy of makeDecoys(list)) {
+        for (let tries = 0; tries < 60; tries++) {
+          const [dr, dc] = DIRECTIONS[rand(DIRECTIONS.length)];
+          const r0 = rand(size); const c0 = rand(size);
+          const cells = [];
+          let fits = true;
+          for (let i = 0; i < decoy.length && fits; i++) {
+            const r = r0 + dr * i; const c = c0 + dc * i;
+            if (r < 0 || r >= size || c < 0 || c >= size || (grid[r][c] && grid[r][c] !== decoy[i])) fits = false;
+            else cells.push([r, c]);
+          }
+          if (!fits) continue;
+          cells.forEach(([r, c], i) => { grid[r][c] = decoy[i]; });
+          break;
+        }
       }
     }
+
+    // Relleno: en difícil, con las mismas letras de las palabras
+    const pool = hard ? list.join('') : ALPHABET;
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (!grid[r][c]) grid[r][c] = pool[rand(pool.length)];
+      }
+    }
+    if (hard && list.some((w) => countWord(grid, w) !== 1)) continue;
     return { grid, placements };
   }
   throw new Error('No se pudo generar la sopa de letras');
@@ -101,11 +167,54 @@ export class WordSearch {
     this.found = new Set();
     this.anchor = null;
     this.completed = false;
-    const { grid, placements } = generatePuzzle(map.words, map.size);
+    this.lost = false;
+    const { grid, placements } = generatePuzzle(map.words, map.size, !!DIF.sopaSenuelos);
     this.grid = grid;
     this.placements = placements;
     this.#render();
+    this.#startClock();
   }
+
+  /* ---------- reloj (dificultad.sopaSegundos) ---------- */
+  #startClock() {
+    clearInterval(this.clock);
+    const el = this.els.timer;
+    const seconds = DIF.sopaSegundos || 0;
+    if (el) el.textContent = '';
+    if (!seconds) return;
+    const deadline = Date.now() + seconds * 1000;
+    const tick = () => {
+      // Si salió del juego, la partida se abandona
+      if (!this.els.grid.isConnected || this.els.grid.closest('[hidden]')) { clearInterval(this.clock); return; }
+      if (this.completed) { clearInterval(this.clock); return; }
+      const s = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      if (el) {
+        el.textContent = `⏱ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} · ${this.found.size}/${this.map.words.length} palabras`;
+        el.classList.toggle('is-error', s <= 20);
+      }
+      if (s <= 0) {
+        clearInterval(this.clock);
+        this.completed = true;
+        this.lost = true;
+        this.#reveal();
+        this.hooks.onTimeUp?.(this.mapId);
+      }
+    };
+    tick();
+    this.clock = setInterval(tick, 250);
+  }
+
+  /** Al perder: marca dónde estaban las que faltaron. */
+  #reveal() {
+    for (const { word, cells } of this.placements) {
+      if (this.found.has(word)) continue;
+      cells.forEach(([r, c]) => this.cells[r][c].classList.add('missed'));
+      const li = this.els.words.querySelector(`[data-word="${word}"]`);
+      if (li) { li.textContent = word; li.classList.add('missed'); }
+    }
+  }
+
+  stop() { clearInterval(this.clock); }
 
   /* ---------- render ---------- */
   #render() {
@@ -130,7 +239,8 @@ export class WordSearch {
     wordsEl.innerHTML = '';
     this.map.words.forEach((w) => {
       const li = document.createElement('li');
-      li.textContent = w;
+      // Palabras ocultas: solo la inicial y cuántas letras lleva
+      li.textContent = DIF.sopaOcultarPalabras ? `${w[0]}${'·'.repeat(w.length - 1)} (${w.length})` : w;
       li.dataset.word = w.toUpperCase();
       wordsEl.appendChild(li);
     });
@@ -217,7 +327,8 @@ export class WordSearch {
 
     this.found.add(target);
     line.forEach(([r, c]) => this.cells[r][c].classList.add('found'));
-    this.els.words.querySelector(`[data-word="${target}"]`)?.classList.add('found');
+    const li = this.els.words.querySelector(`[data-word="${target}"]`);
+    if (li) { li.textContent = target; li.classList.add('found'); }
     this.hooks.onWordFound?.(target);
 
     if (this.found.size === this.map.words.length) {
