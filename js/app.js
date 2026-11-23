@@ -14,6 +14,7 @@ import { initSyllabus } from './syllabus.js';
 import { initAgenda } from './agenda.js';
 import { audio } from './audio.js';
 import { initLogros, renderLogros } from './logros.js';
+import { initChessMode } from './chess.js';
 import { initAntiCheat } from './anticheat.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -38,6 +39,8 @@ const formatDate = (iso) => new Date(iso).toLocaleDateString('es', { day: 'numer
    --------------------------------------------------------------------- */
 let currentView = 'timer';
 let logros = null; // insignias y castigos (se arma al arrancar)
+let chessMode = null; // modo Universidad / Ajedrez (js/chess.js)
+const modeLabel = (onBreak) => (onBreak ? 'Descanso' : chessMode?.mode === 'ajedrez' ? 'Entrenamiento de ajedrez' : 'Modo concentración');
 function showView(name) {
   currentView = name;
   $$('.view').forEach((v) => v.classList.toggle('is-active', v.id === `view-${name}`));
@@ -127,6 +130,7 @@ const timer = new PomodoroTimer({
       const studied = store.focusedTopic();
       store.recordPomodoro();
       logros?.onPomodoro();
+      chessMode?.onPomodoro();
       audio.play('pomodoroDone');
       toast('¡Bloque terminado! +1 🎟️. Empieza tu descanso: los minijuegos están abiertos.', 5000);
       if (studied) toast(`Bloque anotado en ${studied.subject.name}: ${studied.topic.name}. Si ya lo dominas, márcalo en el temario.`, 6000);
@@ -139,7 +143,7 @@ const timer = new PomodoroTimer({
   onModeChange(mode) {
     const onBreak = mode === 'break';
     $('#timer-panel').dataset.mode = mode;
-    $('#mode-label').textContent = onBreak ? 'Descanso' : 'Modo concentración';
+    $('#mode-label').textContent = modeLabel(onBreak);
     $('#btn-skip').hidden = !onBreak;
     $('#btn-go-games').hidden = !onBreak;
     refreshGamesLock();
@@ -160,7 +164,7 @@ const timer = new PomodoroTimer({
 
   onPhrase(text) {
     const el = $('#phrase');
-    el.textContent = text;
+    el.textContent = chessMode?.phrase(timer.mode) || text;
     el.classList.remove('swap');
     void el.offsetWidth; // reinicia la animación
     el.classList.add('swap');
@@ -587,6 +591,7 @@ const agenda = await initAgenda(); // lee public/contenido/notas.js y eventos.js
 store.subscribe(() => {
   renderStats(); renderShop(); renderOwned(); syllabus.render(); agenda.render();
   if (currentView === 'logros') renderLogros($('#logros-root'), logros, store);
+  chessMode?.render();
 });
 const { data: gameData, error: gameDataError } = await loadGameData(); // public/contenido/juegos.js
 setMaps(gameData.sopa, gameData.dificultad);
@@ -595,6 +600,14 @@ renderGameMenu();
 renderSettings();
 await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo
 timer.refresh();      // pinta el reloj y restaura el estado si se recargó la página
+
+// Modo Universidad / Ajedrez
+chessMode = await initChessMode({ store, toast, audio });
+$('#mode-label').textContent = modeLabel(isBreak());
+document.querySelectorAll('[data-modo-btn]').forEach((b) => b.addEventListener('click', () => {
+  $('#mode-label').textContent = modeLabel(isBreak());
+  if (!timer.running) $('#phrase').textContent = chessMode.mode === 'ajedrez' ? 'Pulsa «Iniciar» y a entrenar, gran maestro.' : 'Pulsa «Iniciar» y a darle, ingeniero.';
+}));
 
 // Insignias, potenciadores y castigos (public/contenido/logros.js)
 logros = await initLogros({

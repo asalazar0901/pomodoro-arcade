@@ -20,6 +20,7 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
   - Sopa de letras: 20 mapas en 7 temas (Minecraft, ajedrez, tu novia, Star Wars, películas románticas, fútbol y crossover), con palabras señuelo y 1:30 min para resolverla. Completarla da +1 🎟️.
   - Arcade de supervivencia en Canvas. Llegar a 300 puntos da +1 🎟️.
   - Máximo 1 ticket por juego en cada descanso.
+- **Modo Universidad / Ajedrez**: un interruptor arriba del reloj cambia colores, fondo y frases. En modo Ajedrez los temarios se cambian por: 🏆 pequeñas victorias del día, 🏁 próximos torneos con cuenta regresiva (también salen en la Agenda), 📈 bitácora de ELO por ritmo con gráfica y 🎯 metas a corto, mediano y largo plazo. Vive en `js/chess.js`.
 - **Logros** (pestaña 🏅): 23 insignias con medallas de bronce, plata, oro y netherite. Cada una da un premio: tickets, 🛡️ escudo de netherite (bloquea un castigo), 🔥 fiebre del oro (cada ticket vale 1.5 por unos minutos) o una letra de la clave secreta, que al completarse da un premio. También hay castigos: manzana envenenada (muchas pistas en un descanso), creeper (muchos juegos perdidos), Sindarov (retos de ajedrez perdidos seguidos) y zombi (días sin estudiar). La clave, el premio y la fuerza de los castigos se editan en `public/contenido/logros.js`; las insignias, en `js/logros.js`.
 - **Tienda de cupones**: cada cupón pide tickets **y** una misión cumplida. Al canjearlo se abre una tarjeta lista para captura de pantalla.
 - Todo el progreso se guarda en el navegador (`localStorage`).
@@ -77,6 +78,7 @@ js/security.js         Código de seguridad
 js/audio.js            AudioController (efectos de sonido)
 js/anticheat.js        Easter egg anti-trampas
 js/logros.js           Insignias, potenciadores y castigos
+js/chess.js            Modo Ajedrez: ELO, metas, torneos y pequeñas victorias
 js/wordsearch.js       Sopa de letras
 js/minigames.js        Ahorcado, críptico, Cosi-dle, examen sorpresa y reto de ajedrez
 js/gamedata.js         Carga y revisa public/contenido/juegos.js

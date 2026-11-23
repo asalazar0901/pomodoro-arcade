@@ -205,6 +205,7 @@ const DEFAULT_STATE = () => ({
   hiddenEvents: [], // claves de eventos predeterminados que se quitaron o editaron en la app
   penalty: 0,       // partidas de arcade con penalización anti-trampas pendientes
   logros: null,     // insignias, potenciadores y castigos (lo maneja js/logros.js)
+  chess: null,      // modo ajedrez: elo, metas, pequeñas victorias (lo maneja js/chess.js)
   taskCats: [
     { id: 'universidad', name: 'Universidad', tasks: [] },
     { id: 'ajedrez', name: 'Ajedrez', tasks: [] },
@@ -332,6 +333,13 @@ class Store {
     this.state.tickets -= taken;
     this.#save();
     return taken;
+  }
+
+  /* ---------- modo ajedrez (los datos los arma js/chess.js) ---------- */
+  get chess() { return this.state.chess; }
+  setChess(data) {
+    this.state.chess = data;
+    this.#save();
   }
 
   /* ---------- logros (los datos los arma js/logros.js) ---------- */

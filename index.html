@@ -40,11 +40,16 @@
   <main>
     <!-- ====================== VISTA 1: TEMPORIZADOR ====================== -->
     <section id="view-timer" class="view is-active" aria-labelledby="timer-title">
+      <!-- Interruptor de modo (js/chess.js): cambia colores, frases y paneles -->
+      <div class="mode-switch" role="group" aria-label="Modo">
+        <button type="button" data-modo-btn="u" aria-pressed="true">🎓 Universidad</button>
+        <button type="button" data-modo-btn="ajedrez" aria-pressed="false">♟️ Ajedrez</button>
+      </div>
       <div class="panel timer-panel" id="timer-panel" data-mode="work">
         <h2 id="timer-title" class="mode-label"><span id="mode-label">Modo concentración</span></h2>
 
         <!-- Qué está estudiando en este bloque (se elige de los temarios) -->
-        <label class="focus-pick">
+        <label class="focus-pick" data-solo="u">
           <span>Estudiando ahora:</span>
           <select id="focus-select" aria-label="Tema que estás estudiando"></select>
         </label>
@@ -97,7 +102,72 @@
       </details>
 
       <!-- ============ TEMARIOS DE EXAMEN (materias y temas) ============ -->
-      <div class="panel syllabus-panel" aria-labelledby="syllabus-title">
+      <!-- ============ MODO AJEDREZ (js/chess.js) ============ -->
+      <div id="chess-panels" data-solo="ajedrez" hidden>
+        <div class="panel chess-panel" id="win-panel">
+          <h3>🏆 Pequeñas victorias</h3>
+          <p class="hint">Lo que lograste hoy en tu entrenamiento, en una sola oración. Los pasos pequeños también suman.</p>
+          <form class="add-row" id="win-form" autocomplete="off">
+            <input type="text" id="win-input" maxlength="120" placeholder="Hoy logré… (ej. repasé la Siciliana Najdorf)" aria-label="Pequeña victoria de hoy" />
+            <button class="btn btn-primary btn-small" type="submit">+ Anotar</button>
+          </form>
+          <p class="win-summary" id="win-summary"></p>
+          <ul class="win-list" id="win-today"></ul>
+          <div class="win-past" id="win-past"></div>
+        </div>
+
+        <div class="panel chess-panel">
+          <h3>🏁 Próximos torneos</h3>
+          <form class="add-row tourney-form" id="tourney-form" autocomplete="off">
+            <input type="text" id="tourney-name" maxlength="50" placeholder="Nombre del torneo" aria-label="Nombre del torneo" />
+            <input type="date" id="tourney-date" aria-label="Fecha del torneo" />
+            <button class="btn btn-primary btn-small" type="submit">+</button>
+          </form>
+          <ul class="tourney-list" id="tourney-list"></ul>
+          <p class="hint">Los torneos que agregues también salen en la Agenda.</p>
+        </div>
+
+        <div class="panel chess-panel">
+          <h3>📈 Bitácora de ELO</h3>
+          <form class="elo-form" id="elo-form" autocomplete="off">
+            <input type="number" id="elo-rating" min="100" max="3500" inputmode="numeric" placeholder="ELO" aria-label="ELO" />
+            <select id="elo-ritmo" aria-label="Ritmo"></select>
+            <input type="date" id="elo-date" aria-label="Fecha" />
+            <input type="text" id="elo-note" maxlength="60" placeholder="Nota (opcional): torneo, rival…" aria-label="Nota" />
+            <button class="btn btn-primary btn-small" type="submit">+ Registrar</button>
+          </form>
+          <div class="elo-tabs" id="elo-tabs"></div>
+          <div class="elo-stats" id="elo-stats"></div>
+          <div class="elo-chart" id="elo-chart"></div>
+          <ul class="elo-list" id="elo-list"></ul>
+        </div>
+
+        <div class="panel chess-panel">
+          <h3>🎯 Mis metas</h3>
+          <div class="goal-cols">
+            <div class="goal-col">
+              <h4>Corto plazo <small data-goal-count="corto"></small></h4>
+              <p class="hint">Esta semana o este mes</p>
+              <ul class="goal-list" data-goal-list="corto"></ul>
+              <form class="add-row" data-goal-form="corto" autocomplete="off"><input type="text" maxlength="80" placeholder="Nueva meta" aria-label="Meta a corto plazo" /><button class="btn btn-primary btn-small" type="submit">+</button></form>
+            </div>
+            <div class="goal-col">
+              <h4>Mediano plazo <small data-goal-count="mediano"></small></h4>
+              <p class="hint">Este semestre</p>
+              <ul class="goal-list" data-goal-list="mediano"></ul>
+              <form class="add-row" data-goal-form="mediano" autocomplete="off"><input type="text" maxlength="80" placeholder="Nueva meta" aria-label="Meta a mediano plazo" /><button class="btn btn-primary btn-small" type="submit">+</button></form>
+            </div>
+            <div class="goal-col">
+              <h4>Largo plazo <small data-goal-count="largo"></small></h4>
+              <p class="hint">El gran sueño</p>
+              <ul class="goal-list" data-goal-list="largo"></ul>
+              <form class="add-row" data-goal-form="largo" autocomplete="off"><input type="text" maxlength="80" placeholder="Nueva meta" aria-label="Meta a largo plazo" /><button class="btn btn-primary btn-small" type="submit">+</button></form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel syllabus-panel" aria-labelledby="syllabus-title" data-solo="u">
         <h3 id="syllabus-title">Temarios de examen</h3>
         <p class="hint">Agrega una materia, anota sus temas y márcalos cuando ya los hayas estudiado. Pulsa 🎯 para ponerlo como tema del Pomodoro.</p>
         <form class="add-row" id="subject-form" autocomplete="off">
