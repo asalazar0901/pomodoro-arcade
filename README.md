@@ -58,6 +58,7 @@ Hay dos formas, y se complementan:
 - **Desde GitHub**: los predeterminados, que llegan a cualquier dispositivo. Viven en dos archivos pensados para editarse sin programar:
   - `public/contenido/notas.js`: una nota por línea. También acepta notas para una fecha exacta.
   - `public/contenido/eventos.js`: nombre, fecha y categoría de cada evento.
+  - `public/contenido/registro.js`: la URL de tu Google Sheets para recibir un registro automático de lo que hace (pasos en `docs/registro-google-sheets.md`). Vacío = apagado. Cuando está activo, la app le muestra «💙 Tu novia ve tus avances».
 
 Abre el archivo en GitHub, pulsa el lápiz ✏️, cambia lo que quieras y pulsa **Commit changes**. Vercel publica el cambio solo. Cada archivo trae las instrucciones arriba. Si un archivo queda con un error de escritura, la app sigue funcionando y la Agenda avisa cuál revisar.
 

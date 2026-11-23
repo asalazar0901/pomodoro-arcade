@@ -815,3 +815,5 @@ body[data-modo="ajedrez"] .brand-icon::before { content: '♞'; font-size: 26px;
   .goal-cols { grid-template-columns: repeat(3, 1fr); }
   .mode-switch button { font-size: 11px; }
 }
+
+.registro-aviso { margin: 8px 0 0; padding: 6px 10px; border: 2px dashed var(--blue); background: var(--blue-pale); color: var(--navy); font-size: 18px; text-align: center; }

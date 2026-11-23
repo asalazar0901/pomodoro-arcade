@@ -17,6 +17,8 @@
    `progress`: recibe (stats, contadores, juegos) y devuelve [actual, meta].
    ===================================================================== */
 
+import { registrar } from './registro.js';
+
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const todayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const daysBetween = (a, b) => Math.round((new Date(`${b}T12:00`) - new Date(`${a}T12:00`)) / 86400000);
@@ -137,6 +139,7 @@ export async function initLogros({ store, toast, audio, getBreakId, getSopaIds }
   function log(icon, text, good) {
     data.log.unshift({ icon, text, good, date: new Date().toISOString() });
     data.log = data.log.slice(0, 30);
+    registrar(good ? 'Logro' : 'Castigo', `${icon} ${text}`, { tickets: store.state.tickets });
   }
 
   /* ---------- descanso actual ---------- */

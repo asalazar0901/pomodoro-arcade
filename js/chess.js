@@ -10,6 +10,8 @@
    Todo se guarda en su navegador, dentro del estado de la app (store).
    ===================================================================== */
 
+import { registrar } from './registro.js';
+
 const MODE_KEY = 'pomodoroArcade.modo';
 const RITMOS = ['Blitz', 'Rápido', 'Clásico', 'Bala', 'FIDE'];
 const PLAZOS = [
@@ -98,6 +100,7 @@ export async function initChessMode({ store, toast, audio }) {
     const text = input.value.trim();
     if (!text) return;
     data.wins.unshift({ id: newId(), text, fecha: todayKey() });
+    registrar('Pequeña victoria', text);
     data.wins = data.wins.slice(0, 400);
     input.value = '';
     save();
@@ -113,6 +116,7 @@ export async function initChessMode({ store, toast, audio }) {
     const fecha = $('#tourney-date').value;
     if (!nombre || !parseDate(fecha)) return;
     store.addEvent({ nombre, fecha, categoria: 'ajedrez' }); // también sale en la Agenda
+    registrar('Torneo', `Agregó el torneo «${nombre}» para el ${fecha}`);
     $('#tourney-name').value = '';
     $('#tourney-date').value = '';
     audio.play('word');
@@ -133,6 +137,7 @@ export async function initChessMode({ store, toast, audio }) {
     const before = data.elo.filter((x) => x.ritmo === ritmo);
     const peak = before.length ? Math.max(...before.map((x) => x.rating)) : 0;
     data.elo.push({ id: newId(), fecha, rating, ritmo, nota: $('#elo-note').value.trim() });
+    registrar('ELO', `${ritmo}: ${rating}${before.length && rating > peak ? ' (¡nuevo récord!)' : ''}${$('#elo-note').value.trim() ? ` · ${$('#elo-note').value.trim()}` : ''}`);
     data.elo.sort((a, b) => a.fecha.localeCompare(b.fecha));
     eloRitmo = ritmo;
     $('#elo-rating').value = '';
@@ -149,6 +154,7 @@ export async function initChessMode({ store, toast, audio }) {
     const text = input.value.trim();
     if (!text) return;
     data.goals[form.dataset.goalForm].push({ id: newId(), text, done: false });
+    registrar('Meta nueva', `${form.dataset.goalForm} plazo: ${text}`);
     input.value = '';
     save();
   }));
@@ -173,6 +179,7 @@ export async function initChessMode({ store, toast, audio }) {
     goal.done = box.checked;
     goal.doneAt = box.checked ? todayKey() : null;
     save();
+    if (box.checked) registrar('Meta cumplida', goal.text);
     if (box.checked) { audio.play('win'); toast(`🎯 ¡Meta cumplida! «${goal.text}». Date crédito, eso costó.`, 5000); }
   });
 

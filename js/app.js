@@ -15,6 +15,7 @@ import { initAgenda } from './agenda.js';
 import { audio } from './audio.js';
 import { initLogros, renderLogros } from './logros.js';
 import { initChessMode } from './chess.js';
+import { initRegistro, registrar } from './registro.js';
 import { initAntiCheat } from './anticheat.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -131,6 +132,7 @@ const timer = new PomodoroTimer({
       store.recordPomodoro();
       logros?.onPomodoro();
       chessMode?.onPomodoro();
+      registrar('Pomodoro', `Terminó un bloque de ${getMinutes().work} min en modo ${chessMode?.mode === 'ajedrez' ? 'Ajedrez' : 'Universidad'}${studied ? ` (${studied.subject.name}: ${studied.topic.name})` : ''}`, { tickets: store.state.tickets });
       audio.play('pomodoroDone');
       toast('¡Bloque terminado! +1 🎟️. Empieza tu descanso: los minijuegos están abiertos.', 5000);
       if (studied) toast(`Bloque anotado en ${studied.subject.name}: ${studied.topic.name}. Si ya lo dominas, márcalo en el temario.`, 6000);
@@ -266,6 +268,7 @@ function openMini(key) {
       $('#mini-new').disabled = false;
       const r = awardTicket(key);
       logros?.onGame(key, true, detail);
+      registrar('Minijuego', `Ganó ${def.title}. ${rewardText(r)}`, { tickets: store.state.tickets });
       result.textContent = rewardText(r);
       result.classList.toggle('is-ok', r === 'ok');
       if (r === 'ok') toast('¡Minijuego ganado! +1 🎟️');
@@ -275,6 +278,7 @@ function openMini(key) {
       result.textContent = 'Sin ticket esta vez. Pulsa «Nueva» para intentarlo otra vez.';
       result.classList.remove('is-ok');
       logros?.onGame(key, false);
+      registrar('Minijuego', `Perdió ${def.title}`, { tickets: store.state.tickets });
     },
   });
   currentMini.start();
@@ -309,12 +313,14 @@ const wordsearch = new WordSearch(
       audio.play('gameOver');
       $('#ws-msg').textContent = 'Se acabó el tiempo. En rojo las que faltaron. Pulsa ↻ Nueva para otra.';
       logros?.onGame('sopa', false);
+      registrar('Minijuego', `Se le acabó el tiempo en la sopa «${WORD_MAPS[wordsearch.mapId]?.title || ''}»`, { tickets: store.state.tickets });
     },
     onComplete(mapId) {
       store.recordMapDone(mapId);
       audio.play('win');
       const r = awardTicket(`ws:${mapId}`);
       logros?.onGame('sopa', true, { mapId });
+      registrar('Minijuego', `Completó la sopa «${WORD_MAPS[mapId].title}». ${rewardText(r)}`, { tickets: store.state.tickets });
       $('#ws-msg').textContent = r === 'ok' ? `¡${WORD_MAPS[mapId].title} completado! +1 🎟️` : `¡Completado! ${rewardText(r)}`;
       if (r === 'ok') toast('¡Sopa de letras completada! +1 🎟️');
       if (r === 'ok') { const v = $('#ws-map').value; renderMapPicker(); $('#ws-map').value = v; }
@@ -365,6 +371,7 @@ const arcade = new ArcadeGame($('#arcade-canvas'), {
     const record = store.recordArcadeScore(score);
     audio.play('gameOver');
     logros?.checkAll();
+    registrar('Arcade', `Hizo ${score} puntos${record ? ' (¡nuevo récord!)' : ''}`, { tickets: store.state.tickets });
     showArcadeOverlay(
       record ? '¡Nuevo récord!' : 'Game over',
       `Hiciste ${score} puntos.${record ? ' Tu mejor marca hasta ahora.' : ''}`,
@@ -472,6 +479,7 @@ $('#shop-grid').addEventListener('click', (e) => {
   audio.play('coupon');
   openCoupon(owned.code);
   logros?.checkAll();
+  registrar('Cupón', `Compró «${owned.title}» (código ${owned.code})`, { tickets: store.state.tickets });
 });
 
 $('#owned-grid').addEventListener('click', (e) => {
@@ -600,6 +608,9 @@ renderGameMenu();
 renderSettings();
 await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo
 timer.refresh();      // pinta el reloj y restaura el estado si se recargó la página
+
+// Registro en la hoja de Google Sheets de su novia (public/contenido/registro.js)
+initRegistro().then((on) => { $('#registro-aviso').hidden = !on; });
 
 // Modo Universidad / Ajedrez
 chessMode = await initChessMode({ store, toast, audio });
