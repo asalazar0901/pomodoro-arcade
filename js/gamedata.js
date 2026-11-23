@@ -17,8 +17,8 @@ const FALLBACK = {
   },
   ajedrez: [{ titulo: 'Mate en 2', fen: '8/K5pk/7P/7P/n4Q1R/5Bp1/3p1r2/8 w', solucion: ['f4-f7', 'h7-h8', 'f7-g7'] }],
   sopa: [
-    { id: 'apodos', titulo: 'Mapa 1: Apodos', palabras: ['cosi', 'marshmello', 'grogu', 'besito', 'precioso', 'mivida'] },
-    { id: 'carino', titulo: 'Mapa 2: Cariño', palabras: ['tequiero', 'teamo', 'sosasombroso'] },
+    { id: 'tu-novia', tema: 'Tu novia', titulo: 'Tu novia', palabras: ['picnic', 'noviembre', 'crepas', 'rosado', 'besitos'] },
+    { id: 'clasicos-cine', tema: 'Películas románticas', titulo: 'Clásicos del cine', palabras: ['titanic', 'diario', 'notting', 'orgullo', 'fantasma'] },
   ],
 };
 
@@ -134,8 +134,9 @@ function clean(raw) {
   data.sopa = (raw.sopa || [])
     .map((m) => ({
       id: String(m?.id || '').trim(),
+      tema: String(m?.tema || 'Sopas'),
       titulo: String(m?.titulo || m?.id || ''),
-      palabras: (m?.palabras || []).map((w) => normalizeWord(w)).filter((w) => w.length >= 2 && w.length <= 12),
+      palabras: (m?.palabras || []).map((w) => normalizeWord(w)).filter((w) => w.length >= 2 && w.length <= 15),
     }))
     .filter((m) => m.id && m.palabras.length);
 

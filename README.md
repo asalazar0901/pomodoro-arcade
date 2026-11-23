@@ -17,7 +17,7 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
   - Cosi-dle: adivinar una palabra de 5 letras en 4 intentos, en modo difícil (hay que reusar las letras descubiertas).
   - Examen sorpresa: 7 preguntas de 8 segundos, se aprueba con 6. Las opciones salen revueltas.
   - Reto de ajedrez: 15 mates en 6 contra reloj (10 min, 2 intentos). El rival contesta solo con la defensa que más aguanta. Posiciones verificadas por computadora.
-  - Sopa de letras con generador automático (Mapa 1: Apodos, Mapa 2: Cariño): cuadrícula grande, palabras señuelo, solo se ve la inicial de cada palabra y hay 4 minutos. Completarla da +1 🎟️.
+  - Sopa de letras: 20 mapas en 7 temas (Minecraft, ajedrez, tu novia, Star Wars, películas románticas, fútbol y crossover), con palabras señuelo y 1:30 min para resolverla. Completarla da +1 🎟️.
   - Arcade de supervivencia en Canvas. Llegar a 300 puntos da +1 🎟️.
   - Máximo 1 ticket por juego en cada descanso.
 - **Tienda de cupones**: cada cupón pide tickets **y** una misión cumplida. Al canjearlo se abre una tarjeta lista para captura de pantalla.
@@ -28,15 +28,15 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
 | Cupón | Precio | Misión |
 |---|---|---|
 | Brownie | 8 🎟️ | 2 pomodoros en total |
-| Skittles | 6 🎟️ | Completar la sopa de letras del Mapa 1 (Apodos) |
+| Skittles | 6 🎟️ | Completar la sopa de letras «Tu novia» |
 | Gomitas | 6 🎟️ | 3 pomodoros en total |
 | Red Bull | 7 🎟️ | Racha de 2 pomodoros en un mismo día |
-| 30 min de Before Sunset | 10 🎟️ | Completar la sopa de letras del Mapa 2 (Cariño) |
+| 30 min de Before Sunset | 10 🎟️ | Completar la sopa de letras «Clásicos del cine» |
 | Hoy yo lavo los platos | 15 🎟️ | Racha de 3 pomodoros en un mismo día |
 | Masaje de 5 minutos | 8 🎟️ | 4 pomodoros en total |
 | Masaje de 10 minutos | 14 🎟️ | 250 puntos en el arcade |
 | Masaje de 15 minutos | 20 🎟️ | 400 puntos en el arcade |
-| El Favor Absoluto | 40 🎟️ | 12 pomodoros, 700 pts en arcade y las dos sopas de letras |
+| El Favor Absoluto | 40 🎟️ | 12 pomodoros, 700 pts en arcade y las sopas «Tu novia» y «Clásicos del cine» |
 
 Para cambiar premios, precios o misiones edita el array `COUPON_CATALOG` en `js/store.js`.
 

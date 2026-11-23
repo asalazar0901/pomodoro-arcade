@@ -338,6 +338,8 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
   font-size: 20px; text-transform: uppercase;
 }
 .ws-words li.found { background: var(--latte); text-decoration: line-through; opacity: .75; }
+.ws-picker { display: flex; align-items: center; gap: 8px; justify-content: center; font-size: 20px; color: var(--coffee-dark); margin-bottom: 6px; }
+.ws-picker select { font-family: var(--font-body); font-size: 20px; padding: 4px 6px; border: 3px solid var(--ink); background: #fffaf0; max-width: 260px; }
 .ws-cell.missed { background: #f6c9c3; color: var(--danger); }
 .ws-words li.missed { color: var(--danger); border-color: var(--danger); }
 #ws-timer.is-error { color: var(--danger); }

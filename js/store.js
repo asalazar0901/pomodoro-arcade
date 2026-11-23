@@ -46,7 +46,7 @@ export const COUPON_CATALOG = [
     note: 'Saborea el arcoíris. Las llevo la próxima vez que nos veamos.',
     emoji: '🌈',
     price: 6,
-    goal: { type: 'mapDone', value: 'apodos' },
+    goal: { type: 'mapDone', value: 'tu-novia' },
   },
   {
     id: 'gomitas',
@@ -70,7 +70,7 @@ export const COUPON_CATALOG = [
     note: 'Con mantita y sin mirar el celular.',
     emoji: '🎬',
     price: 10,
-    goal: { type: 'mapDone', value: 'carino' },
+    goal: { type: 'mapDone', value: 'clasicos-cine' },
   },
   {
     id: 'platos',
@@ -119,7 +119,7 @@ export const COUPON_CATALOG = [
    Cada tipo sabe describirse y evaluarse contra las estadísticas.
    Las misiones usan récords históricos: una vez cumplida, queda cumplida.
    --------------------------------------------------------------------- */
-const MAP_NAMES = { apodos: 'Mapa 1 (Apodos)', carino: 'Mapa 2 (Cariño)' };
+const MAP_NAMES = { 'tu-novia': '«Tu novia»', 'clasicos-cine': '«Clásicos del cine»' };
 
 export const GOAL_TYPES = {
   totalPomodoros: {
@@ -140,13 +140,13 @@ export const GOAL_TYPES = {
   },
   // Misión final: todo a la vez.
   legend: {
-    label: (v) => `Modo leyenda: ${v.pomodoros} pomodoros totales, ${v.arcade} pts en arcade y las dos sopas de letras`,
+    label: (v) => `Modo leyenda: ${v.pomodoros} pomodoros totales, ${v.arcade} pts en arcade y las sopas «Tu novia» y «Clásicos del cine»`,
     progress: (s, v) => {
       const parts = [
         s.totalPomodoros >= v.pomodoros,
         s.bestArcade >= v.arcade,
-        !!s.mapsDone.apodos,
-        !!s.mapsDone.carino,
+        !!s.mapsDone['tu-novia'],
+        !!s.mapsDone['clasicos-cine'],
       ];
       return [parts.filter(Boolean).length, parts.length];
     },
@@ -190,7 +190,7 @@ const DEFAULT_STATE = () => ({
     today: 0, // pomodoros de hoy
     bestDaily: 0, // mejor racha en un solo día
     bestArcade: 0,
-    mapsDone: { apodos: 0, carino: 0 }, // veces completado cada mapa
+    mapsDone: {}, // veces completado cada mapa (por id)
   },
   owned: [], // cupones comprados: { code, couponId, title, note, emoji, date, redeemed }
   // Temarios: materias con su lista de temas

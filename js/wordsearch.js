@@ -18,7 +18,7 @@ export function setMaps(list, dif = {}) {
     const letters = m.palabras.reduce((n, w) => n + w.length, 0);
     const base = Math.max(longest + 2, Math.ceil(Math.sqrt(letters * 2.6))) + (DIF.sopaSenuelos ? 4 : 0);
     const size = Math.max(8, Math.min(15, base));
-    WORD_MAPS[m.id] = { title: m.titulo, size, words: m.palabras };
+    WORD_MAPS[m.id] = { title: m.titulo, theme: m.tema, size, words: m.palabras };
   }
 }
 
@@ -139,6 +139,8 @@ export function generatePuzzle(words, size, hard = false) {
     if (hard && list.some((w) => countWord(grid, w) !== 1)) continue;
     return { grid, placements };
   }
+  // Si en modo difícil no sale, se arma sin señuelos
+  if (hard) return generatePuzzle(words, size, false);
   throw new Error('No se pudo generar la sopa de letras');
 }
 

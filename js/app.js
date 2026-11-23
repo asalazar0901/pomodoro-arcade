@@ -182,7 +182,7 @@ function showGameMenu() {
 /** Tarjetas del menú. Las sopas de letras salen de public/contenido/juegos.js. */
 function gameCards() {
   return [
-    ...gameData.sopa.map((m) => ({ key: `ws:${m.id}`, emoji: '🔤', name: 'Sopa de letras', desc: m.titulo, reward: 'al completarla' })),
+    { key: 'sopa', emoji: '🔤', name: 'Sopa de letras', desc: `${gameData.sopa.length} temas · ${fmtSecs(gameData.dificultad.sopaSegundos)}`, reward: 'al completarla' },
     { key: 'ahorcado', emoji: '🍡', name: 'Salva el malvavisco', desc: 'Ahorcado con villanos', reward: 'al salvarlo' },
     { key: 'criptico', emoji: '🧩', name: 'Críptico', desc: 'Una pista de crucigrama críptico', reward: 'al resolverla' },
     { key: 'frase', emoji: '🔐', name: 'Frase cifrada', desc: 'Descifra la frase célebre', reward: 'al descifrarla' },
@@ -222,9 +222,10 @@ $('#game-menu').addEventListener('click', (e) => {
   if (game === 'arcade') {
     $('#game-arcade').hidden = false;
     showArcadeOverlay('Arcade de supervivencia', `Recoge snacks y esquiva a los jefes. A los ${ARCADE_TICKET_SCORE} puntos ganas 1 🎟️.`, '▶ Jugar');
-  } else if (game.startsWith('ws:')) {
+  } else if (game === 'sopa') {
     $('#game-wordsearch').hidden = false;
-    wordsearch.load(game.slice(3));
+    renderMapPicker();
+    wordsearch.load($('#ws-map').value);
   } else {
     openMini(game);
   }
@@ -302,10 +303,29 @@ const wordsearch = new WordSearch(
       const r = awardTicket(`ws:${mapId}`);
       $('#ws-msg').textContent = r === 'ok' ? `¡${WORD_MAPS[mapId].title} completado! +1 🎟️` : `¡Completado! ${rewardText(r)}`;
       if (r === 'ok') toast('¡Sopa de letras completada! +1 🎟️');
+      if (r === 'ok') { const v = $('#ws-map').value; renderMapPicker(); $('#ws-map').value = v; }
     },
   },
 );
 $('#ws-new').addEventListener('click', () => wordsearch.load());
+
+/** Selector de mapas agrupados por tema. Recuerda el último que eligió. */
+const WS_LAST = 'pomodoroArcade.sopa';
+function renderMapPicker() {
+  const sel = $('#ws-map');
+  const groups = {};
+  gameData.sopa.forEach((m) => { (groups[m.tema] ||= []).push(m); });
+  sel.innerHTML = Object.entries(groups).map(([tema, maps]) => `<optgroup label="${escapeHtml(tema)}">${maps.map((m) =>
+    `<option value="${escapeHtml(m.id)}">${escapeHtml(m.titulo)}${claims.rewards[`ws:${m.id}`] ? ' ✓' : ''}</option>`).join('')}</optgroup>`).join('');
+  let last = null;
+  try { last = localStorage.getItem(WS_LAST); } catch { /* nada */ }
+  sel.value = gameData.sopa.some((m) => m.id === last) ? last : gameData.sopa[0].id;
+}
+$('#ws-map').addEventListener('change', (e) => {
+  try { localStorage.setItem(WS_LAST, e.target.value); } catch { /* nada */ }
+  wordsearch.load(e.target.value);
+});
+function fmtSecs(s) { return s ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} min` : 'sin reloj'; }
 
 /* ---- Arcade ---- */
 function showArcadeOverlay(title, text, button) {

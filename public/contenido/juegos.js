@@ -54,9 +54,9 @@ export const JUEGOS = {
     cosidleModoDificil: true,
     ajedrezIntentos: 2,
     ajedrezSegundos: 600,
-    sopaOcultarPalabras: true,
+    sopaOcultarPalabras: false,
     sopaSenuelos: true,
-    sopaSegundos: 240,
+    sopaSegundos: 90,
     criptoPistas: 2,
     criptoErrores: 3,
     cripticoPistas: 3,
@@ -506,14 +506,41 @@ export const JUEGOS = {
 
   /* -------------------------------------------------------------------
      5. SOPA DE LETRAS
-     Cada mapa es un nivel. Puedes agregar mapas nuevos copiando un bloque.
-       id      -> nombre corto sin espacios (no cambies 'apodos' ni 'carino':
-                  algunos cupones dependen de ellos)
-       titulo  -> cómo se llama el mapa
-       palabras -> sin espacios; máximo 12 letras cada una
+     Cada mapa es un nivel y se agrupan por tema en el menú.
+       id       -> nombre corto sin espacios. OJO: 'tu-novia' y 'clasicos-cine'
+                   los piden cupones de la tienda; no les cambies el id.
+       tema     -> grupo en el que aparece
+       titulo   -> cómo se llama el mapa
+       palabras -> sin espacios; máximo 15 letras cada una
+     El tiempo para resolverla se cambia arriba, en DIFICULTAD (sopaSegundos).
      ------------------------------------------------------------------- */
   sopa: [
-    { id: 'apodos', titulo: 'Mapa 1: Apodos', palabras: ['cosi', 'marshmello', 'grogu', 'besito', 'precioso', 'mivida'] },
-    { id: 'carino', titulo: 'Mapa 2: Cariño', palabras: ['tequiero', 'teamo', 'sosasombroso'] },
+    // ---------- Minecraft ----------
+    { id: 'mc-materiales', tema: 'Minecraft', titulo: 'Materiales y crafteo', palabras: ['Diamante', 'Obsidiana', 'Redstone', 'Esmeralda', 'Netherite', 'Yunque', 'Mesa', 'Horno'] },
+    { id: 'mc-mobs', tema: 'Minecraft', titulo: 'Criaturas del juego (mobs)', palabras: ['Creeper', 'Enderman', 'Zombie', 'Esqueleto', 'Wither', 'Aldeano', 'Ajolote', 'Ghast'] },
+    { id: 'mc-mundos', tema: 'Minecraft', titulo: 'Dimensiones y biomas', palabras: ['Nether', 'End', 'Tundra', 'Jungla', 'Fortaleza', 'Pantano', 'Taiga', 'Bastión'] },
+    // ---------- Ajedrez ----------
+    { id: 'aj-tacticas', tema: 'Ajedrez', titulo: 'Tácticas y movimientos', palabras: ['Enroque', 'Jaque', 'Mate', 'Captura', 'Clavada', 'Promoción', 'Coronación', 'Tenedor'] },
+    { id: 'aj-aperturas', tema: 'Ajedrez', titulo: 'Aperturas famosas', palabras: ['Siciliana', 'Francesa', 'Española', 'Gambito', 'CaroKann', 'Italiana', 'Eslava'] },
+    { id: 'aj-leyendas', tema: 'Ajedrez', titulo: 'Piezas y leyendas', palabras: ['Alfil', 'Caballo', 'Peón', 'Torre', 'Rey', 'Reina', 'Kasparov', 'Carlsen', 'Fischer'] },
+    // ---------- Tu novia ----------
+    { id: 'tu-novia', tema: 'Tu novia', titulo: 'Tu novia', palabras: ['Picnic', 'Noviembre', 'Crepas', 'Rosado', 'Besitos', 'Aylin'] },
+    { id: 'amo-de-ti', tema: 'Tu novia', titulo: 'Cosas que amo de ti', palabras: ['Inteligencia', 'Bondad', 'BuenCorazon', 'Hot', 'Belleza', 'Gracioso', 'Amable', 'Ambicion'] },
+    { id: 'futuro', tema: 'Tu novia', titulo: 'El futuro juntos', palabras: ['Tatooine', 'Boda', 'Marshmellitos', 'Italia', 'España', 'USA'] },
+    // ---------- Star Wars ----------
+    { id: 'sw-lados', tema: 'Star Wars', titulo: 'Lado luminoso vs. lado oscuro', palabras: ['Jedi', 'Sith', 'Fuerza', 'Sable', 'Imperio', 'Rebelión', 'República', 'Mandaloriano'] },
+    { id: 'sw-personajes', tema: 'Star Wars', titulo: 'Personajes icónicos', palabras: ['Vader', 'Yoda', 'Chewbacca', 'Luke', 'Leia', 'Han', 'Kenobi', 'Palpatine', 'Boba'] },
+    { id: 'sw-planetas', tema: 'Star Wars', titulo: 'Planetas y naves', palabras: ['Tatooine', 'Hoth', 'Coruscant', 'Halcón', 'Estrella', 'Caza', 'Destructor', 'Naboo'] },
+    // ---------- Películas románticas ----------
+    { id: 'clasicos-cine', tema: 'Películas románticas', titulo: 'Clásicos del cine', palabras: ['Titanic', 'Diario', 'Notting', 'Cuestión', 'Orgullo', 'Prejuicio', 'Fantasma', 'Guardaespaldas'] },
+    { id: 'cliches', tema: 'Películas románticas', titulo: 'Clichés de amor', palabras: ['Aeropuerto', 'Lluvia', 'Cartas', 'Destino', 'Boda', 'Encuentro', 'Mirada', 'Reconciliación'] },
+    { id: 'parejas', tema: 'Películas románticas', titulo: 'Parejas inolvidables', palabras: ['Jack', 'Rose', 'Noah', 'Allie', 'Darcy', 'Elizabeth', 'Sam', 'Molly'] },
+    // ---------- Fútbol ----------
+    { id: 'fut-juego', tema: 'Fútbol', titulo: 'La táctica y el juego', palabras: ['Penal', 'Tiro', 'Fuera', 'Cancha', 'Árbitro', 'Capitán', 'Defensa', 'Delantero'] },
+    { id: 'fut-torneos', tema: 'Fútbol', titulo: 'Torneos y estadios', palabras: ['Mundial', 'Champions', 'Libertadores', 'Bernabéu', 'Maracaná', 'Wembley', 'Final'] },
+    { id: 'fut-calle', tema: 'Fútbol', titulo: 'Términos de calle', palabras: ['Chilena', 'Túnel', 'Sombrerito', 'Escuadra', 'Barrida', 'Gambeta', 'Taquito'] },
+    // ---------- Crossover ----------
+    { id: 'estrategia', tema: 'Crossover', titulo: 'Estrategia pura (fútbol + ajedrez)', palabras: ['Defensa', 'Ataque', 'Posición', 'Tiempo', 'Rey', 'Capitán', 'Movimiento', 'Gol'] },
+    { id: 'romance-galaxia', tema: 'Crossover', titulo: 'Romance en la galaxia (novia + Star Wars)', palabras: ['Princesa', 'Rescate', 'Galaxia', 'Alianza', 'Promesa', 'Juntos', 'Fuerza'] },
   ],
 };
