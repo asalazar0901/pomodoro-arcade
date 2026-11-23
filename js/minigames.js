@@ -430,6 +430,7 @@ export class CrypticClue extends MiniGame {
           <p>Cada pista tiene dos partes: una <strong>definición</strong> (casi siempre al principio o al final) y un <strong>juego de palabras</strong> que lleva a la misma respuesta. Entre paréntesis va el número de letras.</p>
           <ul>${Object.entries(CRYPTIC_TYPES).map(([k, v]) => `<li><strong>${k}:</strong> ${v}</li>`).join('')}</ul>
           <p>Ejemplo: «Roma al revés es lo que siento por ti (4)». Definición: lo que siento por ti. Juego: ROMA al revés = AMOR.</p>
+          <p>Piezas cortas que se usan mucho: notas musicales (DO, RE, MI, FA, SOL, LA, SI), símbolos químicos (NA sodio, FE hierro, CU cobre, O oxígeno), números romanos (D = 500, VI = 6) y puntos cardinales (N, S, E, O).</p>
         </details>
       </div>
       ${keyboardHtml([LETTER_ROWS[0], LETTER_ROWS[1], ['ENVIAR', ...LETTER_ROWS[2], 'BORRAR']])}
