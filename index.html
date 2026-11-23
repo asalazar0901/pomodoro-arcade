@@ -34,6 +34,7 @@
       🕹 Minijuegos <span id="games-lock" class="lock" aria-hidden="true">🔒</span>
     </button>
     <button class="tab" data-view="shop" type="button">🛒 Tienda</button>
+    <button class="tab" data-view="logros" type="button">🏅 Logros</button>
   </nav>
 
   <main>
@@ -278,6 +279,13 @@
     </section>
 
     <!-- ====================== VISTA 3: TIENDA ====================== -->
+    <!-- ====================== VISTA: LOGROS (js/logros.js) ====================== -->
+    <section id="view-logros" class="view" aria-labelledby="logros-title">
+      <h2 id="logros-title" class="section-title">Insignias y logros</h2>
+      <p class="hint center">Gana insignias estudiando y jugando. Cada una trae un premio: tickets, escudos, fiebre del oro o una letra de la clave secreta. Pero cuidado con los castigos.</p>
+      <div id="logros-root"></div>
+    </section>
+
     <section id="view-shop" class="view" aria-labelledby="shop-title">
       <h2 id="shop-title" class="section-title">Tienda de cupones</h2>
       <p class="hint center">Cada cupón pide tickets <em>y</em> una misión cumplida. Cuando lo compres, hazle captura y mándasela a tu novia para cobrarlo.</p>
@@ -321,5 +329,15 @@
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
   <script type="module" src="js/app.js"></script>
+  <!-- Ventana de insignia nueva o castigo (js/logros.js) -->
+  <div class="logro-pop" id="logro-pop" role="dialog" aria-modal="true" aria-labelledby="lp-title" hidden>
+    <div class="lp-card">
+      <p class="lp-kicker"></p>
+      <div class="lp-medal medal"></div>
+      <h3 class="lp-title" id="lp-title"></h3>
+      <p class="lp-text"></p>
+      <button class="btn btn-primary lp-ok" type="button">¡Va!</button>
+    </div>
+  </div>
 </body>
 </html>

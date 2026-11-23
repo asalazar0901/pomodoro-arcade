@@ -651,3 +651,87 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
 @media (min-width: 640px) {
   .game-menu { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ============================ LOGROS ============================ */
+/* Medalla: círculo pixelado con el color del nivel y un listón */
+.medal {
+  position: relative; flex: 0 0 auto;
+  width: 64px; height: 64px; display: grid; place-items: center;
+  font-size: 30px; line-height: 1;
+  border: 4px solid var(--ink); border-radius: 50%;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .35), inset 0 -8px 0 rgba(0, 0, 0, .18), 3px 3px 0 var(--ink);
+}
+.medal::after {
+  content: ''; position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
+  width: 26px; height: 14px; background: var(--danger); border: 3px solid var(--ink); border-top: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 60%, 0 100%); z-index: -1;
+}
+.medal.is-bronce { background: radial-gradient(circle at 35% 30%, #f3c08a, #b46a2c 70%); }
+.medal.is-plata { background: radial-gradient(circle at 35% 30%, #ffffff, #9aa7b8 70%); }
+.medal.is-plata::after { background: var(--blue); }
+.medal.is-oro { background: radial-gradient(circle at 35% 30%, #fff1a6, #e0a21b 70%); }
+.medal.is-oro::after { background: var(--ok); }
+.medal.is-netherite { background: radial-gradient(circle at 35% 30%, #9c7ac9, #3a2a4f 70%); }
+.medal.is-netherite::after { background: #e9b949; }
+.medal.is-castigo { background: radial-gradient(circle at 35% 30%, #b9e3a2, #3d7a2b 70%); }
+.medal.is-castigo::after { background: #222; }
+
+.lg-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; padding: 12px 8px; }
+.lg-stat strong { display: block; font-family: var(--font-pixel); font-size: 14px; color: var(--navy); }
+.lg-stat span { font-size: 17px; color: var(--coffee); }
+.lg-stat.is-hot strong { color: var(--danger); }
+.lg-clave h3, .lg-rules h3, .lg-log h3 { margin: 0 0 8px; font-family: var(--font-pixel); font-size: 12px; color: var(--navy); }
+.lg-letters { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 6px 0 10px; }
+.lg-letter {
+  width: 34px; height: 40px; line-height: 38px; text-align: center; font-size: 26px;
+  background: var(--navy-2); color: var(--blue-light); border: 3px solid var(--ink);
+}
+.lg-letter.is-shown { background: var(--warn); color: var(--ink); }
+.lg-gap { width: 14px; }
+.lg-prize { background: var(--warn); border: 3px dashed var(--ink); padding: 10px; text-align: center; }
+.lg-prize-text { font-size: 22px; margin: 6px 0 0; }
+.lg-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 14px 0; }
+.lg-badge {
+  display: flex; gap: 14px; align-items: center; padding: 12px 12px 18px;
+  background: var(--cream); border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+}
+.lg-badge:not(.is-done) .medal { filter: grayscale(1); opacity: .55; }
+.lg-badge.is-done { background: #fff6dc; }
+.lg-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.lg-info strong { font-family: var(--font-pixel); font-size: 11px; color: var(--navy); line-height: 1.5; }
+.lg-info span { font-size: 18px; color: var(--coffee-dark); line-height: 1.15; }
+.lg-info em { font-style: normal; font-size: 16px; color: var(--coffee); }
+.lg-badge.is-done .lg-info em { color: var(--ok); }
+.lg-bar { height: 10px; background: #e6dccb; border: 2px solid var(--ink); margin: 4px 0 2px; }
+.lg-bar i { display: block; height: 100%; background: var(--blue); }
+.lg-rules ul, .lg-log ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 18px; color: var(--coffee-dark); }
+.lg-log li.is-bad { color: var(--danger); }
+.lg-log small { color: var(--coffee); opacity: .8; }
+
+/* Ventana emergente de insignia o castigo */
+.logro-pop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(10, 14, 30, .72); }
+.logro-pop[hidden] { display: none; }
+.lp-card {
+  width: min(360px, 100%); text-align: center; padding: 18px 16px 16px;
+  background: var(--cream); border: 4px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+  animation: lp-in .35s steps(4);
+}
+@keyframes lp-in { from { transform: scale(.6); opacity: 0; } }
+.lp-kicker { margin: 0 0 10px; font-family: var(--font-pixel); font-size: 10px; color: var(--blue); }
+.logro-pop.is-bad .lp-kicker { color: var(--danger); }
+.lp-medal { width: 88px; height: 88px; font-size: 44px; margin: 0 auto 20px; animation: lp-spin 1.2s steps(6) 1; }
+@keyframes lp-spin { 50% { transform: rotateY(180deg); } }
+.logro-pop.is-bad .lp-medal { animation: lp-shake .5s steps(4) 2; }
+@keyframes lp-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.lp-title { margin: 0 0 8px; font-family: var(--font-pixel); font-size: 13px; color: var(--navy); line-height: 1.5; }
+.lp-text { white-space: pre-line; font-size: 19px; color: var(--coffee-dark); margin: 0 0 14px; }
+
+/* Cinco pestañas: 3 + 2 en celular, 5 en escritorio */
+.tabs { grid-template-columns: repeat(6, 1fr); }
+.tab { grid-column: span 2; }
+.tab:nth-child(4), .tab:nth-child(5) { grid-column: span 3; }
+@media (min-width: 640px) {
+  .tabs { grid-template-columns: repeat(5, 1fr); }
+  .tab, .tab:nth-child(4), .tab:nth-child(5) { grid-column: auto; }
+  .lg-grid { grid-template-columns: repeat(2, 1fr); }
+}

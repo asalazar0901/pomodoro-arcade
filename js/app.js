@@ -13,6 +13,7 @@ import { ArcadeGame, ARCADE_TICKET_SCORE } from './arcade.js';
 import { initSyllabus } from './syllabus.js';
 import { initAgenda } from './agenda.js';
 import { audio } from './audio.js';
+import { initLogros, renderLogros } from './logros.js';
 import { initAntiCheat } from './anticheat.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -36,12 +37,14 @@ const formatDate = (iso) => new Date(iso).toLocaleDateString('es', { day: 'numer
    Navegación entre vistas
    --------------------------------------------------------------------- */
 let currentView = 'timer';
+let logros = null; // insignias y castigos (se arma al arrancar)
 function showView(name) {
   currentView = name;
   $$('.view').forEach((v) => v.classList.toggle('is-active', v.id === `view-${name}`));
   $$('.tab').forEach((t) => t.classList.toggle('is-active', t.dataset.view === name));
   if (name !== 'games') leaveArcade(); // el arcade no corre en segundo plano
   if (name === 'games' && canPlay()) showGameMenu();
+  if (name === 'logros') renderLogros($('#logros-root'), logros, store);
   window.scrollTo({ top: 0 });
 }
 $$('.tab').forEach((t) => t.addEventListener('click', () => showView(t.dataset.view)));
@@ -77,6 +80,7 @@ function awardTicket(gameKey) {
   claims.tickets += 1;
   saveClaims();
   store.addTickets(1);
+  logros?.bonus(1);
   updateGameCards();
   return 'ok';
 }
@@ -122,6 +126,7 @@ const timer = new PomodoroTimer({
     if (finished === 'work') {
       const studied = store.focusedTopic();
       store.recordPomodoro();
+      logros?.onPomodoro();
       audio.play('pomodoroDone');
       toast('¡Bloque terminado! +1 🎟️. Empieza tu descanso: los minijuegos están abiertos.', 5000);
       if (studied) toast(`Bloque anotado en ${studied.subject.name}: ${studied.topic.name}. Si ya lo dominas, márcalo en el temario.`, 6000);
@@ -252,9 +257,11 @@ function openMini(key) {
   $('#game-mini').hidden = false;
   currentMini = def.make($('#mini-root'), {
     sfx: (name) => audio.play(name),
-    onWin: () => {
+    onHint: () => logros?.onHint(),
+    onWin: (detail) => {
       $('#mini-new').disabled = false;
       const r = awardTicket(key);
+      logros?.onGame(key, true, detail);
       result.textContent = rewardText(r);
       result.classList.toggle('is-ok', r === 'ok');
       if (r === 'ok') toast('¡Minijuego ganado! +1 🎟️');
@@ -263,6 +270,7 @@ function openMini(key) {
       $('#mini-new').disabled = false;
       result.textContent = 'Sin ticket esta vez. Pulsa «Nueva» para intentarlo otra vez.';
       result.classList.remove('is-ok');
+      logros?.onGame(key, false);
     },
   });
   currentMini.start();
@@ -296,11 +304,13 @@ const wordsearch = new WordSearch(
     onTimeUp() {
       audio.play('gameOver');
       $('#ws-msg').textContent = 'Se acabó el tiempo. En rojo las que faltaron. Pulsa ↻ Nueva para otra.';
+      logros?.onGame('sopa', false);
     },
     onComplete(mapId) {
       store.recordMapDone(mapId);
       audio.play('win');
       const r = awardTicket(`ws:${mapId}`);
+      logros?.onGame('sopa', true, { mapId });
       $('#ws-msg').textContent = r === 'ok' ? `¡${WORD_MAPS[mapId].title} completado! +1 🎟️` : `¡Completado! ${rewardText(r)}`;
       if (r === 'ok') toast('¡Sopa de letras completada! +1 🎟️');
       if (r === 'ok') { const v = $('#ws-map').value; renderMapPicker(); $('#ws-map').value = v; }
@@ -350,6 +360,7 @@ const arcade = new ArcadeGame($('#arcade-canvas'), {
   onGameOver(score) {
     const record = store.recordArcadeScore(score);
     audio.play('gameOver');
+    logros?.checkAll();
     showArcadeOverlay(
       record ? '¡Nuevo récord!' : 'Game over',
       `Hiciste ${score} puntos.${record ? ' Tu mejor marca hasta ahora.' : ''}`,
@@ -456,6 +467,7 @@ $('#shop-grid').addEventListener('click', (e) => {
   if (!owned) return;
   audio.play('coupon');
   openCoupon(owned.code);
+  logros?.checkAll();
 });
 
 $('#owned-grid').addEventListener('click', (e) => {
@@ -572,7 +584,10 @@ initAntiCheat((message) => {
    --------------------------------------------------------------------- */
 const syllabus = initSyllabus();
 const agenda = await initAgenda(); // lee public/contenido/notas.js y eventos.js
-store.subscribe(() => { renderStats(); renderShop(); renderOwned(); syllabus.render(); agenda.render(); });
+store.subscribe(() => {
+  renderStats(); renderShop(); renderOwned(); syllabus.render(); agenda.render();
+  if (currentView === 'logros') renderLogros($('#logros-root'), logros, store);
+});
 const { data: gameData, error: gameDataError } = await loadGameData(); // public/contenido/juegos.js
 setMaps(gameData.sopa, gameData.dificultad);
 if (gameDataError) { $('#games-error').hidden = false; $('#games-error').textContent = gameDataError; }
@@ -580,3 +595,13 @@ renderGameMenu();
 renderSettings();
 await store.init();   // carga el catálogo (hoy local; mañana Sheets/Firebase) y pinta todo
 timer.refresh();      // pinta el reloj y restaura el estado si se recargó la página
+
+// Insignias, potenciadores y castigos (public/contenido/logros.js)
+logros = await initLogros({
+  store, toast, audio,
+  getBreakId: () => (isBreak() ? timer.breakId : 'fuera'),
+  getSopaIds: () => gameData.sopa.map((m) => m.id),
+});
+logros.onLoad();
+// El reloj de la fiebre del oro se actualiza solo mientras se ve la pestaña
+setInterval(() => { if (currentView === 'logros' && logros.feverLeft()) renderLogros($('#logros-root'), logros, store); }, 1000);

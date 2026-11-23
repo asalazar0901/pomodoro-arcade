@@ -468,6 +468,7 @@ export class CrypticClue extends MiniGame {
     if (this.over || this.hints >= Math.min(this.maxHints, 3)) return;
     this.hints += 1;
     this.sfx('word');
+    this.hooks.onHint?.();
     this.#paint();
     this.#save();
   }
@@ -483,7 +484,7 @@ export class CrypticClue extends MiniGame {
       this.over = true;
       this.#paint();
       msg.innerHTML = `¡Correcto! Era <strong>${escapeHtml(this.answer)}</strong>. ${escapeHtml(this.entry.explicacion || '')}`;
-      this.win();
+      this.win({ hints: this.hints });
       this.#save();
       return;
     }
@@ -613,7 +614,7 @@ export class Cosidle extends MiniGame {
 
     if (guess === this.word) {
       msg.textContent = `¡Era ${this.word}! Lo lograste en ${this.rows.length} intento${this.rows.length === 1 ? '' : 's'}.`;
-      this.win();
+      this.win({ tries: this.rows.length });
     } else if (this.rows.length >= this.tries) {
       msg.textContent = `Se acabaron los intentos. Era: ${this.word}`;
       msg.classList.add('is-error');

@@ -204,6 +204,7 @@ const DEFAULT_STATE = () => ({
   hiddenNotes: [],  // textos de notas predeterminadas que se quitaron en la app
   hiddenEvents: [], // claves de eventos predeterminados que se quitaron o editaron en la app
   penalty: 0,       // partidas de arcade con penalización anti-trampas pendientes
+  logros: null,     // insignias, potenciadores y castigos (lo maneja js/logros.js)
   taskCats: [
     { id: 'universidad', name: 'Universidad', tasks: [] },
     { id: 'ajedrez', name: 'Ajedrez', tasks: [] },
@@ -322,6 +323,21 @@ class Store {
 
   addTickets(n = 1) {
     this.state.tickets += n;
+    this.#save();
+  }
+
+  /** Quita tickets sin bajar de 0. Devuelve cuántos quitó de verdad. */
+  spendTickets(n = 1) {
+    const taken = Math.min(this.state.tickets, Math.max(0, n));
+    this.state.tickets -= taken;
+    this.#save();
+    return taken;
+  }
+
+  /* ---------- logros (los datos los arma js/logros.js) ---------- */
+  get logros() { return this.state.logros; }
+  setLogros(data) {
+    this.state.logros = data;
     this.#save();
   }
 
