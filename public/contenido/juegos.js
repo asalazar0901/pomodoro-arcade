@@ -38,6 +38,8 @@ export const JUEGOS = {
        sopaOcultarPalabras     -> true: solo ve la inicial y cuántas letras lleva
        sopaSenuelos            -> true: cuadrícula más grande y palabras falsas parecidas
        sopaSegundos            -> tiempo para encontrar todo (0 = sin reloj)
+       criptoPistas            -> letras que ya vienen resueltas en el críptico
+       criptoErrores           -> veces que puede llenar todo mal antes de perder
      ------------------------------------------------------------------- */
   dificultad: {
     ahorcadoFallos: 4,
@@ -49,33 +51,172 @@ export const JUEGOS = {
     sopaOcultarPalabras: true,
     sopaSenuelos: true,
     sopaSegundos: 240,
+    criptoPistas: 2,
+    criptoErrores: 3,
   },
 
   /* -------------------------------------------------------------------
-     1. AHORCADO: "Salva el Malvavisco"
-     Cada fallo acerca al villano al malvavisco. Los fallos permitidos
-     se cambian arriba, en DIFICULTAD.
-       palabra -> lo que hay que adivinar (puede llevar espacios)
-       pista   -> la ayuda que se muestra
+     1. AHORCADO: "Salva el Malvavisco" (por temas)
+     Cada partida elige un tema al azar y una palabra de ese tema.
+     Cada fallo acerca al villano al malvavisco (fallos: ver DIFICULTAD).
+       tema     -> nombre que se muestra arriba
+       fondo    -> el dibujo de fondo. Opciones:
+                   'espacio' (estrellas), 'tablero' (ajedrez), 'biblioteca',
+                   'plano' (azul de ingeniería), 'musica' (discos), 'cafe' (normal)
+       palabras -> lista de { palabra, pista }. La palabra puede llevar espacios.
+     Para un tema nuevo copia un bloque completo { tema ... }, desde la llave
+     que abre hasta la que cierra, y pégalo debajo.
      ------------------------------------------------------------------- */
   ahorcado: [
-    { palabra: 'ornitorrinco', pista: 'El animal con el peor diseño de la naturaleza' },
-    { palabra: 'dipper', pista: 'Disfraz goated que no sé cómo usasaste un día' },
-    { palabra: 'marshmello', pista: 'Resultado que pasaría si no hay time out' },
-    { palabra: 'before sunset', pista: 'Película que te encanta' },
-    { palabra: 'brownie', pista: 'Un postre que te gusta mucho' },
-    { palabra: 'estereofon', pista: 'Bloque blanco que te frena en el arcade' },
-    { palabra: 'gambito de dama', pista: 'Apertura de ajedrez con nombre de serie' },
-    { palabra: 'grogu', pista: 'Pequeño, verde y fan de las galletas azules' },
-    { palabra: 'buenos dias', pista: 'Lo primero que me escribes' },
-    { palabra: 'te extraño', pista: 'Lo que más dices en semana de exámenes' },
-    { palabra: 'videollamada', pista: 'Cuando no nos podemos ver en persona' },
-    { palabra: 'quien cuelga primero', pista: 'La discusión que nadie gana' },
-    { palabra: 'foto juntos', pista: 'Lo que siempre te pido en las salidas' },
-    { palabra: 'aniversario', pista: 'La fecha que no se te puede olvidar' },
-    { palabra: 'palomitas', pista: 'No pueden faltar en la peli' },
-    { palabra: 'mensaje de buenas noches', pista: 'Lo último del día' },
-    { palabra: 'tomarnos de la mano', pista: 'Lo que hacemos al caminar' },
+    {
+      tema: 'Star Wars',
+      fondo: 'espacio',
+      palabras: [
+        { palabra: 'halcon milenario', pista: 'La nave que hizo la carrera de Kessel en menos de doce pársecs' },
+        { palabra: 'tatooine', pista: 'Planeta desértico con dos soles' },
+        { palabra: 'sable de luz', pista: 'El arma elegante de un caballero jedi' },
+        { palabra: 'chewbacca', pista: 'Copiloto peludo que solo gruñe' },
+        { palabra: 'estrella de la muerte', pista: 'Estación espacial capaz de destruir planetas' },
+        { palabra: 'palpatine', pista: 'El emperador que movía los hilos desde el principio' },
+        { palabra: 'mandaloriano', pista: 'Cazarrecompensas con casco que nunca se quita' },
+        { palabra: 'hiperespacio', pista: 'Por donde viajan las naves más rápido que la luz' },
+        { palabra: 'endor', pista: 'Luna boscosa donde viven los ewoks' },
+        { palabra: 'droide', pista: 'Lo que son R2-D2 y C-3PO' },
+        { palabra: 'obi wan kenobi', pista: 'Maestro de Anakin y luego de Luke' },
+      ],
+    },
+    {
+      tema: 'Historia del ajedrez',
+      fondo: 'tablero',
+      palabras: [
+        { palabra: 'chaturanga', pista: 'Juego de la India, el abuelo del ajedrez' },
+        { palabra: 'deep blue', pista: 'Computadora de IBM que le ganó a Kasparov en 1997' },
+        { palabra: 'ruy lopez', pista: 'Sacerdote español que da nombre a una apertura' },
+        { palabra: 'capablanca', pista: 'Campeón cubano famoso por su juego limpio y natural' },
+        { palabra: 'bobby fischer', pista: 'Le ganó el título a Spassky en Reikiavik en 1972' },
+        { palabra: 'la inmortal', pista: 'Partida de Anderssen contra Kieseritzky de 1851' },
+        { palabra: 'steinitz', pista: 'Primer campeón mundial oficial, en 1886' },
+        { palabra: 'judit polgar', pista: 'La mejor jugadora de la historia' },
+        { palabra: 'mijail tal', pista: 'El mago de Riga, rey de los sacrificios' },
+        { palabra: 'piezas de lewis', pista: 'Piezas medievales de marfil halladas en una isla de Escocia' },
+        { palabra: 'elefante', pista: 'Así se llamaba antes la pieza que hoy es el alfil' },
+      ],
+    },
+    {
+      tema: 'Cultura general',
+      fondo: 'biblioteca',
+      palabras: [
+        { palabra: 'frida kahlo', pista: 'Pintora mexicana de los autorretratos' },
+        { palabra: 'teotihuacan', pista: 'Ciudad de las pirámides del Sol y de la Luna' },
+        { palabra: 'don quijote', pista: 'Caballero que confundió molinos con gigantes' },
+        { palabra: 'machu picchu', pista: 'Ciudad inca en lo alto de los Andes' },
+        { palabra: 'mona lisa', pista: 'La sonrisa más famosa del Louvre' },
+        { palabra: 'chichen itza', pista: 'Ciudad maya con la pirámide de Kukulkán' },
+        { palabra: 'shakespeare', pista: 'Escribió Romeo y Julieta' },
+        { palabra: 'gran muralla', pista: 'Construcción china de miles de kilómetros' },
+        { palabra: 'beethoven', pista: 'Compositor que siguió creando ya sordo' },
+        { palabra: 'olimpiadas', pista: 'Juegos que nacieron en la antigua Grecia' },
+        { palabra: 'sor juana', pista: 'Monja y poeta novohispana del billete de 200' },
+      ],
+    },
+    {
+      tema: 'Ciencia e ingeniería',
+      fondo: 'plano',
+      palabras: [
+        { palabra: 'termodinamica', pista: 'La rama de la física de la energía y el calor' },
+        { palabra: 'entropia', pista: 'Lo que siempre aumenta en un sistema aislado' },
+        { palabra: 'puente colgante', pista: 'Estructura sostenida por cables, como el Golden Gate' },
+        { palabra: 'nikola tesla', pista: 'El inventor de la corriente alterna' },
+        { palabra: 'marie curie', pista: 'Ganó dos premios Nobel en ciencias distintas' },
+        { palabra: 'transistor', pista: 'Piececita que está en la base de toda la electrónica' },
+        { palabra: 'aceleracion', pista: 'Cambio de la velocidad en el tiempo' },
+        { palabra: 'torque', pista: 'Fuerza que hace girar; lo que presume un motor' },
+        { palabra: 'ley de ohm', pista: 'V = I · R' },
+        { palabra: 'isaac newton', pista: 'Según la leyenda, le cayó una manzana' },
+        { palabra: 'resistencia de materiales', pista: 'Materia de ingeniería sobre cuánto aguanta una viga' },
+      ],
+    },
+    {
+      tema: 'Nuestras canciones',
+      fondo: 'musica',
+      palabras: [
+        { palabra: 'say you wont let go', pista: 'De James Arthur, en nuestra playlist' },
+        { palabra: 'all of me', pista: 'De John Legend, en nuestra playlist' },
+        { palabra: 'perfect', pista: 'De Ed Sheeran, en nuestra playlist' },
+        { palabra: 'romeo y julieta', pista: 'De Pablo Lacadiere, en nuestra playlist' },
+        { palabra: 'caminar de tu mano', pista: 'De Río Roma con Fonseca, en nuestra playlist' },
+        { palabra: 'i love you so', pista: 'De The Walters, en nuestra playlist' },
+        { palabra: 'stand by me', pista: 'De Ben E. King, en nuestra playlist' },
+        { palabra: 'those eyes', pista: 'De New West, en nuestra playlist' },
+        { palabra: 'until i found you', pista: 'De Stephen Sanchez, en nuestra playlist' },
+        { palabra: 'thinking out loud', pista: 'De Ed Sheeran, en nuestra playlist' },
+        { palabra: 'just the way you are', pista: 'De Bruno Mars, en nuestra playlist' },
+        { palabra: 'tu de que vas', pista: 'De Franco De Vita, en nuestra playlist' },
+        { palabra: 'no te imaginas', pista: 'De No Te Va Gustar, en nuestra playlist' },
+      ],
+    },
+  ],
+
+  /* -------------------------------------------------------------------
+     1b. CRÍPTICO (criptograma)
+     Cada frase se cifra: cada letra se cambia por un número. Al descifrarla
+     sale el autor. Las pistas y las comprobaciones se cambian en DIFICULTAD.
+       frase -> la frase (con tildes y comas, como quieras)
+       autor -> quién la dijo
+     ------------------------------------------------------------------- */
+  cripto: [
+    { frase: 'Los errores están ahí, esperando a ser cometidos.', autor: 'Savielly Tartakower' },
+    { frase: 'El ganador es el que comete el penúltimo error.', autor: 'Savielly Tartakower' },
+    { frase: 'Los peones son el alma del ajedrez.', autor: 'François-André Philidor' },
+    { frase: 'Para mejorar tu ajedrez, estudia primero los finales.', autor: 'José Raúl Capablanca' },
+    { frase: 'La amenaza es más fuerte que su ejecución.', autor: 'Aron Nimzowitsch' },
+    { frase: 'Cuando veas una buena jugada, busca una mejor.', autor: 'Emanuel Lasker' },
+    { frase: 'El ajedrez es la vida.', autor: 'Bobby Fischer' },
+    { frase: 'Dadme un punto de apoyo y moveré el mundo.', autor: 'Arquímedes' },
+    { frase: 'Nada en la vida debe ser temido, solo comprendido.', autor: 'Marie Curie' },
+    { frase: 'Un experto es alguien que ha cometido todos los errores posibles en un campo muy reducido.', autor: 'Niels Bohr' },
+    { frase: 'No he fracasado. He encontrado diez mil formas que no funcionan.', autor: 'Thomas Edison' },
+    { frase: 'La imaginación es más importante que el conocimiento.', autor: 'Albert Einstein' },
+    { frase: 'La vida es como andar en bicicleta: para mantener el equilibrio hay que seguir adelante.', autor: 'Albert Einstein' },
+    { frase: 'Lo importante es no dejar de hacerse preguntas.', autor: 'Albert Einstein' },
+    { frase: 'Si he visto más lejos, es porque estoy sobre hombros de gigantes.', autor: 'Isaac Newton' },
+    { frase: 'El presente es de ellos; el futuro, por el que tanto trabajé, es mío.', autor: 'Nikola Tesla' },
+    { frase: 'La naturaleza está escrita en lenguaje matemático.', autor: 'Galileo Galilei' },
+    { frase: 'Y sin embargo, se mueve.', autor: 'Galileo Galilei' },
+    { frase: 'El científico no estudia la naturaleza porque sea útil, sino porque se deleita en ella.', autor: 'Henri Poincaré' },
+    { frase: 'Ama y haz lo que quieras.', autor: 'San Agustín' },
+    { frase: 'El amor no mira con los ojos, sino con el alma.', autor: 'William Shakespeare' },
+    { frase: 'Ser o no ser, esa es la cuestión.', autor: 'William Shakespeare' },
+    { frase: 'Lo esencial es invisible a los ojos.', autor: 'Antoine de Saint-Exupéry' },
+    { frase: 'Amar no es mirarse el uno al otro, sino mirar juntos en la misma dirección.', autor: 'Antoine de Saint-Exupéry' },
+    { frase: 'El tiempo que pasaste con tu rosa es lo que la hace tan importante.', autor: 'Antoine de Saint-Exupéry' },
+    { frase: 'Donde hay amor, hay vida.', autor: 'Mahatma Gandhi' },
+    { frase: 'El que lee mucho y anda mucho, ve mucho y sabe mucho.', autor: 'Miguel de Cervantes' },
+    { frase: 'Caminante, no hay camino, se hace camino al andar.', autor: 'Antonio Machado' },
+    { frase: 'Toda la vida es sueño, y los sueños, sueños son.', autor: 'Pedro Calderón de la Barca' },
+    { frase: 'Lo que con mucho trabajo se adquiere, más se ama.', autor: 'Aristóteles' },
+    { frase: 'La paciencia es amarga, pero su fruto es dulce.', autor: 'Jean-Jacques Rousseau' },
+    { frase: 'El hombre es la medida de todas las cosas.', autor: 'Protágoras' },
+    { frase: 'Solo sé que no sé nada.', autor: 'Sócrates' },
+    { frase: 'La suerte está echada.', autor: 'Julio César' },
+    { frase: 'Entre los individuos, como entre las naciones, el respeto al derecho ajeno es la paz.', autor: 'Benito Juárez' },
+    { frase: 'Es mejor morir de pie que vivir de rodillas.', autor: 'Emiliano Zapata' },
+    { frase: 'Camarón que se duerme, se lo lleva la corriente.', autor: 'Refrán popular' },
+    { frase: 'Al que madruga, Dios lo ayuda.', autor: 'Refrán popular' },
+    { frase: 'No hay mal que por bien no venga.', autor: 'Refrán popular' },
+    { frase: 'Dime con quién andas y te diré quién eres.', autor: 'Refrán popular' },
+    { frase: 'El que persevera, alcanza.', autor: 'Refrán popular' },
+    { frase: 'Poco a poco se anda lejos.', autor: 'Refrán popular' },
+    { frase: 'Más vale paso que dure y no trote que canse.', autor: 'Refrán popular' },
+    { frase: 'Hazlo o no lo hagas, pero no lo intentes.', autor: 'Yoda' },
+    { frase: 'Que la Fuerza te acompañe.', autor: 'Star Wars' },
+    { frase: 'El miedo lleva a la ira, la ira lleva al odio, el odio lleva al sufrimiento.', autor: 'Yoda' },
+    { frase: 'Este es el camino.', autor: 'The Mandalorian' },
+    { frase: 'El éxito es la suma de pequeños esfuerzos repetidos día tras día.', autor: 'Robert Collier' },
+    { frase: 'Estudia no para saber una cosa más, sino para saberla mejor.', autor: 'Séneca' },
+    { frase: 'No cuentes los días, haz que los días cuenten.', autor: 'Muhammad Ali' },
+    { frase: 'Todo parece imposible hasta que se hace.', autor: 'Nelson Mandela' },
+    { frase: 'La disciplina es el puente entre las metas y los logros.', autor: 'Jim Rohn' },
   ],
 
   /* -------------------------------------------------------------------

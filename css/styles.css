@@ -496,6 +496,63 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
 @keyframes hm-bob { 50% { transform: translateY(-3px); } }
 .hm-track.is-lost .hm-prize { opacity: 0; transition: opacity .4s; }
 .hm-track.is-lost .hm-villain { animation: none; }
+/* Escenario del ahorcado: el fondo cambia con el tema (fondo: '...' en juegos.js) */
+.hm-stage { padding: 10px 10px 12px; margin: 0 -4px 10px; border: 3px solid var(--ink); background: var(--cream, #f6ecd9); }
+.hm-theme { text-align: center; font-size: 18px; margin: 0 0 4px; color: var(--coffee-dark); }
+.hm-stage.fondo-espacio {
+  background:
+    radial-gradient(1px 1px at 12% 20%, #fff 99%, transparent), radial-gradient(1px 1px at 70% 12%, #fff 99%, transparent),
+    radial-gradient(2px 2px at 40% 60%, #ffe9a8 99%, transparent), radial-gradient(1px 1px at 85% 75%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 25% 85%, #cfe0ff 99%, transparent), radial-gradient(2px 2px at 92% 40%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 55% 30%, #fff 99%, transparent), radial-gradient(1px 1px at 5% 55%, #fff 99%, transparent),
+    linear-gradient(#05070f, #121a35);
+}
+.hm-stage.fondo-espacio, .hm-stage.fondo-espacio .hm-theme, .hm-stage.fondo-espacio .mg-hint, .hm-stage.fondo-espacio .mg-status { color: #f2f5ff; }
+.hm-stage.fondo-espacio .hm-track { border-bottom-color: #ffe9a8; background: none; }
+.hm-stage.fondo-tablero {
+  background: repeating-conic-gradient(#e9d3ae 0 25%, #c9a275 0 50%) 0 0 / 40px 40px;
+}
+.hm-stage.fondo-tablero .hm-theme, .hm-stage.fondo-tablero .mg-hint, .hm-stage.fondo-tablero .mg-status { background: rgba(255, 248, 235, .88); padding: 2px 6px; }
+.hm-stage.fondo-biblioteca {
+  background:
+    repeating-linear-gradient(90deg, #8b3a2b 0 10px, #2f5d8a 10px 18px, #c99a3b 18px 24px, #4a7a4b 24px 33px, #6d3f72 33px 40px) top / 100% 26px no-repeat,
+    linear-gradient(#5a3a22 26px, #f3e6cc 26px);
+  padding-top: 34px;
+}
+.hm-stage.fondo-plano {
+  background:
+    linear-gradient(rgba(255, 255, 255, .14) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, rgba(255, 255, 255, .14) 1px, transparent 1px) 0 0 / 16px 16px,
+    #1f4f8f;
+}
+.hm-stage.fondo-plano, .hm-stage.fondo-plano .hm-theme, .hm-stage.fondo-plano .mg-hint, .hm-stage.fondo-plano .mg-status { color: #eaf2ff; }
+.hm-stage.fondo-plano .hm-track { border-bottom-color: #eaf2ff; background: none; }
+.hm-stage.fondo-musica {
+  background:
+    radial-gradient(circle at 50% 50%, #3a2a4f 0 6px, #111 7px 9px, #2a2a2a 10px 11px, #111 12px 14px, #2a2a2a 15px 16px, #111 17px 22px, transparent 23px) 0 0 / 52px 52px,
+    linear-gradient(#2b1d3d, #4b2c5e);
+}
+.hm-stage.fondo-musica, .hm-stage.fondo-musica .hm-theme, .hm-stage.fondo-musica .mg-hint, .hm-stage.fondo-musica .mg-status { color: #fbefff; }
+.hm-stage.fondo-musica .hm-track { border-bottom-color: #f2b8ff; background: none; }
+.hm-stage .hm-letter { background: #fffaf0; }
+
+/* ---- Críptico ---- */
+.cr-phrase { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin: 8px 0 10px; }
+.cr-word { display: inline-flex; gap: 3px; white-space: nowrap; }
+.cr-cell {
+  width: 26px; padding: 0; border: 0; background: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; font-family: inherit;
+}
+.cr-cell b {
+  display: block; width: 26px; height: 28px; line-height: 28px; text-align: center;
+  font-size: 22px; color: var(--navy); border-bottom: 3px solid var(--ink); background: #fffaf0;
+}
+.cr-cell i { font-style: normal; font-size: 14px; color: var(--coffee); }
+.cr-cell.is-selected b { background: var(--warn); }
+.cr-cell.is-given b { color: var(--ok); }
+.cr-cell.is-given { cursor: default; }
+.cr-punct { align-self: flex-start; font-size: 22px; line-height: 28px; color: var(--navy); }
+.kb-key.is-used { background: var(--blue-pale); color: var(--coffee); }
 .hm-word { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0 0; }
 .hm-letter {
   width: 28px; height: 36px; display: flex; align-items: flex-end; justify-content: center;

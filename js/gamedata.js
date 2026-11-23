@@ -5,7 +5,8 @@
    ===================================================================== */
 
 const FALLBACK = {
-  ahorcado: [{ palabra: 'brownie', pista: 'El premio más barato de la tienda' }],
+  ahorcado: [{ tema: 'Variado', fondo: 'cafe', palabras: [{ palabra: 'brownie', pista: 'Un postre de la tienda' }] }],
+  cripto: [{ frase: 'Cuando veas una buena jugada, busca una mejor.', autor: 'Emanuel Lasker' }],
   cosidle: ['grogu', 'besos', 'pasta'],
   trivia: {
     titulo: 'Examen sorpresa', segundos: 15, cuantas: 3, aprobar: 2,
@@ -30,6 +31,9 @@ export function normalizeWord(text, keepSpaces = false) {
     .replace(keepSpaces ? /[^A-ZÑ ]/g : /[^A-ZÑ]/g, '');
   return keepSpaces ? clean.replace(/\s+/g, ' ').trim() : clean;
 }
+
+/** Fondos disponibles para los temas del ahorcado (ver css/styles.css). */
+export const FONDOS = ['cafe', 'espacio', 'tablero', 'biblioteca', 'plano', 'musica'];
 
 const MOVE = /^[a-h][1-8]-[a-h][1-8]$/;
 const isList = (v) => Array.isArray(v) && v.length > 0;
@@ -62,6 +66,8 @@ function cleanDifficulty(d = {}) {
     sopaOcultarPalabras: bool(d.sopaOcultarPalabras, true),
     sopaSenuelos: bool(d.sopaSenuelos, true),
     sopaSegundos: num(d.sopaSegundos, 30, 1800, 240, true),
+    criptoPistas: num(d.criptoPistas, 0, 10, 2, true),
+    criptoErrores: num(d.criptoErrores, 1, 10, 3),
   };
   dif.ahorcadoPistaTrasFallos = Math.min(dif.ahorcadoPistaTrasFallos, dif.ahorcadoFallos - 1);
   return dif;
@@ -74,9 +80,18 @@ function clean(raw) {
   data.ajustes = { ticketsMaxPorDescanso: Number.isFinite(max) ? Math.max(1, Math.min(max, 10)) : 2 };
   data.dificultad = cleanDifficulty(raw.dificultad);
 
-  data.ahorcado = (raw.ahorcado || [])
-    .map((x) => ({ palabra: normalizeWord(x?.palabra, true), pista: String(x?.pista || '') }))
-    .filter((x) => x.palabra.replace(/ /g, '').length >= 3);
+  // Ahorcado por temas: [{ tema, fondo, palabras: [{ palabra, pista }] }]
+  // (también acepta palabras sueltas sin tema, como antes)
+  data.ahorcado = (raw.ahorcado || []).flatMap((x) => {
+    const list = Array.isArray(x?.palabras) ? x.palabras : [x];
+    const tema = String(x?.tema || 'Variado');
+    const fondo = FONDOS.includes(x?.fondo) ? x.fondo : 'cafe';
+    return list.map((w) => ({ palabra: normalizeWord(w?.palabra, true), pista: String(w?.pista || ''), tema, fondo }));
+  }).filter((x) => x.palabra.replace(/ /g, '').length >= 3);
+
+  data.cripto = (raw.cripto || [])
+    .map((x) => ({ frase: String(x?.frase || '').replace(/\s+/g, ' ').trim(), autor: String(x?.autor || '') }))
+    .filter((x) => normalizeWord(x.frase).length >= 8);
 
   data.cosidle = [...new Set((raw.cosidle || []).map((w) => normalizeWord(w)).filter((w) => w.length === 5))];
 
@@ -110,7 +125,7 @@ function clean(raw) {
 
   // Lo que quede vacío se rellena con lo de fábrica
   const usedFallback = [];
-  for (const key of ['ahorcado', 'cosidle', 'ajedrez', 'sopa']) {
+  for (const key of ['ahorcado', 'cripto', 'cosidle', 'ajedrez', 'sopa']) {
     if (!isList(data[key])) { data[key] = clean0(key); usedFallback.push(key); }
   }
   if (!isList(data.trivia.preguntas)) {
@@ -126,7 +141,8 @@ let fallbackClean = null;
 function clean0(key) {
   if (!fallbackClean) {
     fallbackClean = {
-      ahorcado: FALLBACK.ahorcado.map((x) => ({ palabra: normalizeWord(x.palabra, true), pista: x.pista })),
+      ahorcado: FALLBACK.ahorcado[0].palabras.map((x) => ({ palabra: normalizeWord(x.palabra, true), pista: x.pista, tema: 'Variado', fondo: 'cafe' })),
+      cripto: FALLBACK.cripto,
       cosidle: FALLBACK.cosidle.map((w) => normalizeWord(w)),
       trivia: FALLBACK.trivia,
       ajedrez: FALLBACK.ajedrez.map((p) => ({ ...p, solucion: parseSolution(p.solucion) })),

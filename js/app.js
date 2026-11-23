@@ -8,7 +8,7 @@ import { PomodoroTimer, formatTime, getMinutes, saveMinutes, validateMinutes, LI
 import { security } from './security.js';
 import { WordSearch, WORD_MAPS, setMaps } from './wordsearch.js';
 import { loadGameData } from './gamedata.js';
-import { Hangman, Cosidle, Trivia, ChessPuzzle } from './minigames.js';
+import { Hangman, Cryptogram, Cosidle, Trivia, ChessPuzzle } from './minigames.js';
 import { ArcadeGame, ARCADE_TICKET_SCORE } from './arcade.js';
 import { initSyllabus } from './syllabus.js';
 import { initAgenda } from './agenda.js';
@@ -184,6 +184,7 @@ function gameCards() {
   return [
     ...gameData.sopa.map((m) => ({ key: `ws:${m.id}`, emoji: '🔤', name: 'Sopa de letras', desc: m.titulo, reward: 'al completarla' })),
     { key: 'ahorcado', emoji: '🍡', name: 'Salva el malvavisco', desc: 'Ahorcado con villanos', reward: 'al salvarlo' },
+    { key: 'cripto', emoji: '🔐', name: 'Críptico', desc: 'Descifra la frase célebre', reward: 'al descifrarla' },
     { key: 'cosidle', emoji: '🟩', name: 'Cosi-dle', desc: `La palabra en ${gameData.dificultad.cosidleIntentos} intentos`, reward: 'al adivinarla' },
     ...(gameData.trivia.activo ? [{ key: 'trivia', emoji: '📝', name: 'Examen sorpresa', desc: gameData.trivia.titulo, reward: 'al aprobar' }] : []),
     { key: 'ajedrez', emoji: '♟️', name: 'Reto de ajedrez', desc: 'Mate en 6, contra reloj', reward: 'al dar mate' },
@@ -232,6 +233,7 @@ $('#game-menu').addEventListener('click', (e) => {
 /* ---- Ahorcado, Cosi-dle, examen sorpresa y ajedrez ---- */
 const MINI_GAMES = {
   ahorcado: { title: 'Salva el malvavisco', make: (root, hooks) => new Hangman(root, gameData.ahorcado, hooks, gameData.dificultad) },
+  cripto: { title: 'Críptico', make: (root, hooks) => new Cryptogram(root, gameData.cripto, hooks, gameData.dificultad) },
   cosidle: { title: 'Cosi-dle', make: (root, hooks) => new Cosidle(root, gameData.cosidle, hooks, gameData.dificultad) },
   trivia: { title: 'Examen sorpresa', make: (root, hooks) => new Trivia(root, gameData.trivia, hooks, gameData.dificultad) },
   ajedrez: { title: 'Reto de ajedrez', make: (root, hooks) => new ChessPuzzle(root, gameData.ajedrez, hooks, gameData.dificultad) },

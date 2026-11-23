@@ -109,23 +109,33 @@ export class Hangman extends MiniGame {
     } catch { /* sin almacenamiento: no pasa nada */ }
   }
 
+  /** Primero un tema al azar y luego una palabra de ese tema (sin repetir la anterior). */
+  #pickEntry() {
+    const temas = [...new Set(this.data.map((x) => x.tema))];
+    const tema = pick(temas);
+    return pickNew(this.data.filter((x) => x.tema === tema), this.entry);
+  }
+
   start() {
     if (this.entry && !this.over) return;   // sigue la misma partida
     const saved = this.#load();
     this.over = false;
-    this.entry = saved ? saved.entry : pickNew(this.data, this.entry);
+    this.entry = saved ? saved.entry : this.#pickEntry();
     this.word = this.entry.palabra;          // ya viene en MAYÚSCULAS y sin tildes
     this.guessed = saved ? saved.guessed : new Set();
     this.fails = [...this.guessed].filter((ch) => !this.word.includes(ch)).length;
     this.villain = saved ? saved.villain : pick(VILLAINS);
     this.root.innerHTML = `
-      <p class="mg-hint hm-hint"></p>
-      <div class="hm-track" aria-hidden="true">
-        <div class="hm-villain" style="background-image:url('${this.villain.sprite}')"></div>
-        <img class="hm-prize" src="assets/malvavisco_v2.png" alt="" />
+      <div class="hm-stage fondo-${this.entry.fondo}">
+        <p class="hm-theme">Tema: <strong>${escapeHtml(this.entry.tema)}</strong></p>
+        <p class="mg-hint hm-hint"></p>
+        <div class="hm-track" aria-hidden="true">
+          <div class="hm-villain" style="background-image:url('${this.villain.sprite}')"></div>
+          <img class="hm-prize" src="assets/malvavisco_v2.png" alt="" />
+        </div>
+        <p class="mg-status" aria-live="polite"></p>
+        <p class="hm-word" aria-label="Palabra"></p>
       </div>
-      <p class="mg-status" aria-live="polite"></p>
-      <p class="hm-word" aria-label="Palabra"></p>
       ${keyboardHtml(LETTER_ROWS)}
       <p class="game-msg" aria-live="polite"></p>`;
     this.root.querySelector('.kb').addEventListener('click', (e) => {
@@ -190,7 +200,175 @@ export class Hangman extends MiniGame {
 }
 
 /* =====================================================================
-   2. COSI-DLE: palabra de 5 letras en 6 intentos
+   1b. CRÍPTICO: criptograma. Una frase célebre donde cada letra se
+   cambió por un número. Misma letra = mismo número.
+   ===================================================================== */
+const CRYPTO_KEY = 'pomodoroArcade.cripto';
+
+export class Cryptogram extends MiniGame {
+  get canRestart() { return this.over; }
+  get maxErrors() { return this.dif.criptoErrores || 3; }
+
+  #load() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CRYPTO_KEY) || 'null');
+      const entry = saved && this.data.find((x) => x.frase === saved.frase);
+      return entry ? { entry, ...saved } : null;
+    } catch { return null; }
+  }
+  #save() {
+    try {
+      if (this.over) localStorage.removeItem(CRYPTO_KEY);
+      else localStorage.setItem(CRYPTO_KEY, JSON.stringify({
+        frase: this.entry.frase, code: this.code, guess: this.guess, given: [...this.given], errors: this.errors,
+      }));
+    } catch { /* sin almacenamiento */ }
+  }
+
+  start() {
+    if (this.entry && !this.over) return;
+    const saved = this.#load();
+    this.over = false;
+    this.entry = saved ? saved.entry : pickNew(this.data, this.entry);
+    // Texto en mayúsculas y sin tildes; lo demás (comas, puntos) se queda igual
+    this.text = [...this.entry.frase.toUpperCase()].map((ch) => normalizeWord(ch) || ch).join('');
+    const letters = [...new Set([...this.text].filter((ch) => /[A-ZÑ]/.test(ch)))];
+    if (saved) {
+      this.code = saved.code; this.guess = saved.guess; this.given = new Set(saved.given); this.errors = saved.errors || 0;
+    } else {
+      const nums = shuffle(Array.from({ length: 27 }, (_, i) => i + 1));
+      this.code = Object.fromEntries(letters.map((ch, i) => [ch, nums[i]]));
+      this.guess = {};                      // número -> letra que puso él
+      this.given = new Set(shuffle(letters).slice(0, Math.min(this.dif.criptoPistas ?? 2, letters.length - 1)));
+      this.given.forEach((ch) => { this.guess[this.code[ch]] = ch; });
+      this.errors = 0;
+    }
+    this.selected = null;
+
+    const words = this.text.split(' ');
+    this.root.innerHTML = `
+      <p class="mg-hint">Cada número es una letra. Toca una casilla y escribe la letra. Las pistas ya vienen en verde.</p>
+      <div class="cr-phrase">${words.map((w) => `<span class="cr-word">${[...w].map((ch) => (
+        this.code[ch]
+          ? `<button type="button" class="cr-cell ${this.given.has(ch) ? 'is-given' : ''}" data-n="${this.code[ch]}"><b></b><i>${this.code[ch]}</i></button>`
+          : `<span class="cr-punct">${escapeHtml(ch)}</span>`)).join('')}</span>`).join('')}</div>
+      <p class="mg-status" aria-live="polite"></p>
+      ${keyboardHtml([LETTER_ROWS[0], LETTER_ROWS[1], [...LETTER_ROWS[2], 'BORRAR']])}
+      <p class="game-msg" aria-live="polite"></p>`;
+    this.$('.cr-phrase').addEventListener('click', (e) => {
+      const cell = e.target.closest('[data-n]');
+      if (!cell || this.over) return;
+      const n = Number(cell.dataset.n);
+      if (this.#isGiven(n)) return;
+      this.selected = n;
+      this.#paint();
+    });
+    this.root.querySelector('.kb').addEventListener('click', (e) => {
+      const key = e.target.closest('[data-key]');
+      if (key) this.press(key.dataset.key);
+    });
+    this.#paint();
+    this.#save();
+  }
+
+  #isGiven(n) { return [...this.given].some((ch) => this.code[ch] === n); }
+  #numbers() { return [...new Set(Object.values(this.code))]; }
+
+  onKey(key) {
+    if (key === 'Backspace' || key === 'Delete') { this.press('BORRAR'); return true; }
+    if (key === 'ArrowRight' || key === 'ArrowLeft') { this.#move(key === 'ArrowRight' ? 1 : -1); return true; }
+    const letter = normalizeWord(key);
+    if (letter.length === 1) { this.press(letter); return true; }
+    return false;
+  }
+
+  /** Pasa a la siguiente casilla vacía. */
+  #move(dir = 1) {
+    const order = [...this.root.querySelectorAll('.cr-cell')].map((c) => Number(c.dataset.n)).filter((n, i, a) => a.indexOf(n) === i && !this.#isGiven(n));
+    if (!order.length) return;
+    let i = order.indexOf(this.selected);
+    for (let k = 0; k < order.length; k++) {
+      i = (i + dir + order.length) % order.length;
+      if (dir < 0 || !this.guess[order[i]]) { this.selected = order[i]; this.#paint(); return; }
+    }
+  }
+
+  press(key) {
+    if (this.over || this.selected == null) {
+      if (!this.over && this.selected == null) {
+        const msg = this.$('.game-msg');
+        msg.textContent = 'Toca primero una casilla.';
+        msg.classList.remove('is-error');
+      }
+      return;
+    }
+    const msg = this.$('.game-msg');
+    msg.textContent = '';
+    msg.classList.remove('is-error');
+    if (key === 'BORRAR') {
+      delete this.guess[this.selected];
+    } else {
+      // Una letra solo puede estar en un número
+      for (const [n, ch] of Object.entries(this.guess)) if (ch === key && !this.#isGiven(Number(n))) delete this.guess[n];
+      if (Object.entries(this.guess).some(([n, ch]) => ch === key)) {
+        msg.textContent = `La ${key} ya es una pista fija.`;
+        msg.classList.add('is-error');
+        return;
+      }
+      this.guess[this.selected] = key;
+      this.sfx('word');
+      this.#move(1);
+    }
+    this.#paint();
+    this.#check();
+    this.#save();
+  }
+
+  #check() {
+    const nums = this.#numbers();
+    if (!nums.every((n) => this.guess[n])) return;
+    const right = Object.entries(this.code).every(([ch, n]) => this.guess[n] === ch);
+    const msg = this.$('.game-msg');
+    if (right) {
+      this.selected = null;
+      this.over = true;
+      this.#paint();
+      msg.innerHTML = `¡Descifrada! <br><em>«${escapeHtml(this.entry.frase)}»</em>${this.entry.autor ? `<br>— ${escapeHtml(this.entry.autor)}` : ''}`;
+      this.win();
+      return;
+    }
+    this.errors += 1;
+    this.sfx('hit');
+    if (this.errors >= this.maxErrors) {
+      this.over = true;
+      this.selected = null;
+      Object.entries(this.code).forEach(([ch, n]) => { this.guess[n] = ch; });
+      this.#paint();
+      msg.innerHTML = `Sin intentos. Era: <em>«${escapeHtml(this.entry.frase)}»</em>${this.entry.autor ? ` — ${escapeHtml(this.entry.autor)}` : ''}`;
+      msg.classList.add('is-error');
+      this.lose();
+      return;
+    }
+    this.#paint();
+    msg.textContent = 'Todo lleno, pero hay letras equivocadas. Revisa.';
+    msg.classList.add('is-error');
+  }
+
+  #paint() {
+    this.root.querySelectorAll('.cr-cell').forEach((cell) => {
+      const n = Number(cell.dataset.n);
+      cell.querySelector('b').textContent = this.guess[n] || '';
+      cell.classList.toggle('is-selected', n === this.selected);
+    });
+    const used = new Set(Object.values(this.guess));
+    this.root.querySelectorAll('.kb-key').forEach((btn) => btn.classList.toggle('is-used', used.has(btn.dataset.key)));
+    const left = this.maxErrors - this.errors;
+    this.$('.mg-status').textContent = `Comprobaciones fallidas que quedan: ${'●'.repeat(Math.max(0, left))}${'○'.repeat(Math.max(0, this.errors))}`;
+  }
+}
+
+/* =====================================================================
+   2. COSI-DLE: palabra de 5 letras
    ===================================================================== */
 export class Cosidle extends MiniGame {
   static LENGTH = 5;
