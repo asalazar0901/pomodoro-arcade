@@ -14,7 +14,7 @@ export const LOGROS = {
      para que le haga captura y te la mande.
      Usa pocas letras: hay 7 insignias que dan letra (los espacios no cuentan).
      ------------------------------------------------------------------- */
-  claveSecreta: 'TE AMO',
+  claveSecreta: 'MINION',
   premioClave: 'Una cita sorpresa planeada por tu novia, sin límite de presupuesto (bueno, casi).',
 
   /* -------------------------------------------------------------------

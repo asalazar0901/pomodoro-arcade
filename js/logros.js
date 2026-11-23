@@ -25,34 +25,34 @@ const wins = (c, k) => c.wins[k] || 0;
 /* tier: bronce | plata | oro | netherite  (el color de la medalla) */
 export const BADGES = [
   // ---- Estudio ----
-  { id: 'primer-bloque', icon: '🍅', tier: 'bronce', name: 'Primer bloque', desc: 'Termina tu primer pomodoro.', reward: { tickets: 1 }, progress: (s) => [s.totalPomodoros, 1] },
-  { id: 'constante', icon: '📚', tier: 'plata', name: 'Estudiante constante', desc: 'Termina 10 pomodoros.', reward: { letra: 1 }, progress: (s) => [s.totalPomodoros, 10] },
-  { id: 'maquina', icon: '⚙️', tier: 'oro', name: 'Máquina de estudio', desc: 'Termina 40 pomodoros.', reward: { fiebre: 1 }, progress: (s) => [s.totalPomodoros, 40] },
-  { id: 'racha-4', icon: '🔥', tier: 'plata', name: 'En llamas', desc: 'Haz 4 pomodoros en un mismo día.', reward: { escudo: 1 }, progress: (s) => [s.bestDaily, 4] },
-  { id: 'racha-8', icon: '☄️', tier: 'netherite', name: 'Imparable', desc: 'Haz 8 pomodoros en un mismo día.', reward: { letra: 1 }, progress: (s) => [s.bestDaily, 8] },
-  { id: 'nocturno', icon: '🦉', tier: 'bronce', name: 'Búho nocturno', desc: 'Termina un pomodoro después de las 11 de la noche.', reward: { tickets: 1 }, progress: (s, c) => [c.night, 1] },
-  { id: 'madrugador', icon: '🐓', tier: 'bronce', name: 'Madrugador', desc: 'Termina un pomodoro antes de las 8 de la mañana.', reward: { escudo: 1 }, progress: (s, c) => [c.early, 1] },
+  { id: 'primer-bloque', icon: '🍅', tier: 'bronce', name: 'Calentando motores', desc: 'Termina 5 pomodoros.', reward: { tickets: 1 }, progress: (s) => [s.totalPomodoros, 5] },
+  { id: 'constante', icon: '📚', tier: 'plata', name: 'Estudiante constante', desc: 'Termina 25 pomodoros.', reward: { letra: 1 }, progress: (s) => [s.totalPomodoros, 25] },
+  { id: 'maquina', icon: '⚙️', tier: 'oro', name: 'Máquina de estudio', desc: 'Termina 100 pomodoros.', reward: { fiebre: 1 }, progress: (s) => [s.totalPomodoros, 100] },
+  { id: 'racha-4', icon: '🔥', tier: 'plata', name: 'En llamas', desc: 'Haz 6 pomodoros en un mismo día.', reward: { escudo: 1 }, progress: (s) => [s.bestDaily, 6] },
+  { id: 'racha-8', icon: '☄️', tier: 'netherite', name: 'Imparable', desc: 'Haz 10 pomodoros en un mismo día.', reward: { letra: 1 }, progress: (s) => [s.bestDaily, 10] },
+  { id: 'nocturno', icon: '🦉', tier: 'bronce', name: 'Búho nocturno', desc: 'Termina 5 pomodoros después de las 9 de la noche.', reward: { tickets: 1 }, progress: (s, c) => [c.night, 5] },
+  { id: 'madrugador', icon: '🐓', tier: 'bronce', name: 'Madrugador', desc: 'Termina 5 pomodoros antes de las 8 de la mañana.', reward: { escudo: 1 }, progress: (s, c) => [c.early, 5] },
   // ---- Arcade ----
-  { id: 'arcade-300', icon: '👷', tier: 'bronce', name: 'Ingeniero sobreviviente', desc: 'Llega a 300 puntos en el arcade.', reward: { letra: 1 }, progress: (s) => [s.bestArcade, 300] },
-  { id: 'arcade-700', icon: '🥫', tier: 'plata', name: 'Rey de los snacks', desc: 'Llega a 700 puntos en el arcade.', reward: { tickets: 2 }, progress: (s) => [s.bestArcade, 700] },
-  { id: 'arcade-1000', icon: '🦹', tier: 'oro', name: 'Ni Homelander pudo', desc: 'Llega a 1000 puntos en el arcade.', reward: { fiebre: 1 }, progress: (s) => [s.bestArcade, 1000] },
+  { id: 'arcade-300', icon: '👷', tier: 'bronce', name: 'Ingeniero sobreviviente', desc: 'Llega a 500 puntos en el arcade.', reward: { letra: 1 }, progress: (s) => [s.bestArcade, 500] },
+  { id: 'arcade-700', icon: '🥫', tier: 'plata', name: 'Rey de los snacks', desc: 'Llega a 1000 puntos en el arcade.', reward: { tickets: 2 }, progress: (s) => [s.bestArcade, 1000] },
+  { id: 'arcade-1000', icon: '🦹', tier: 'oro', name: 'Ni Homelander pudo', desc: 'Llega a 1500 puntos en el arcade.', reward: { fiebre: 1 }, progress: (s) => [s.bestArcade, 1500] },
   // ---- Sopa de letras ----
-  { id: 'sopa-5', icon: '🔤', tier: 'plata', name: 'Ojo de águila', desc: 'Completa 5 sopas de letras distintas.', reward: { letra: 1 }, progress: (s, c, g) => [Object.keys(s.mapsDone).filter((k) => s.mapsDone[k] && g.sopaIds.includes(k)).length, 5] },
+  { id: 'sopa-5', icon: '🔤', tier: 'plata', name: 'Ojo de águila', desc: 'Completa 10 sopas de letras distintas.', reward: { letra: 1 }, progress: (s, c, g) => [Object.keys(s.mapsDone).filter((k) => s.mapsDone[k] && g.sopaIds.includes(k)).length, 10] },
   { id: 'sopa-todas', icon: '🗺️', tier: 'netherite', name: 'Cartógrafo', desc: 'Completa todas las sopas de letras disponibles.', reward: { tickets: 3 }, progress: (s, c, g) => [g.sopaIds.filter((k) => s.mapsDone[k]).length, g.sopaIds.length || 1] },
   // ---- Críptico ----
-  { id: 'criptico-1', icon: '🧩', tier: 'bronce', name: 'Descifrador', desc: 'Resuelve tu primer críptico.', reward: { letra: 1 }, progress: (s, c) => [wins(c, 'criptico'), 1] },
-  { id: 'criptico-10', icon: '🕵️', tier: 'oro', name: 'Mente críptica', desc: 'Resuelve 10 crípticos.', reward: { fiebre: 1 }, progress: (s, c) => [wins(c, 'criptico'), 10] },
-  { id: 'criptico-solo', icon: '🧠', tier: 'plata', name: 'Sin ayuda', desc: 'Resuelve 3 crípticos sin pedir ninguna pista.', reward: { escudo: 1 }, progress: (s, c) => [c.cripticoSolo, 3] },
+  { id: 'criptico-1', icon: '🧩', tier: 'bronce', name: 'Descifrador', desc: 'Resuelve 5 crípticos.', reward: { letra: 1 }, progress: (s, c) => [wins(c, 'criptico'), 5] },
+  { id: 'criptico-10', icon: '🕵️', tier: 'oro', name: 'Mente críptica', desc: 'Resuelve 25 crípticos.', reward: { fiebre: 1 }, progress: (s, c) => [wins(c, 'criptico'), 25] },
+  { id: 'criptico-solo', icon: '🧠', tier: 'plata', name: 'Sin ayuda', desc: 'Resuelve 5 crípticos sin pedir ninguna pista.', reward: { escudo: 1 }, progress: (s, c) => [c.cripticoSolo, 5] },
   // ---- Ahorcado y Cosi-dle ----
-  { id: 'malvavisco-5', icon: '🍡', tier: 'plata', name: 'Guardián del malvavisco', desc: 'Salva el malvavisco 5 veces.', reward: { letra: 1 }, progress: (s, c) => [wins(c, 'ahorcado'), 5] },
-  { id: 'cosidle-2', icon: '🟩', tier: 'oro', name: 'Telepatía', desc: 'Adivina un Cosi-dle en 2 intentos o menos.', reward: { tickets: 2 }, progress: (s, c) => [c.cosidleFast, 1] },
-  { id: 'cosidle-10', icon: '🔠', tier: 'plata', name: 'Diccionario andante', desc: 'Adivina 10 Cosi-dles.', reward: { escudo: 1 }, progress: (s, c) => [wins(c, 'cosidle'), 10] },
+  { id: 'malvavisco-5', icon: '🍡', tier: 'plata', name: 'Guardián del malvavisco', desc: 'Salva el malvavisco 15 veces.', reward: { letra: 1 }, progress: (s, c) => [wins(c, 'ahorcado'), 15] },
+  { id: 'cosidle-2', icon: '🟩', tier: 'oro', name: 'Telepatía', desc: 'Adivina 5 Cosi-dles en 2 intentos o menos.', reward: { tickets: 2 }, progress: (s, c) => [c.cosidleFast, 5] },
+  { id: 'cosidle-10', icon: '🔠', tier: 'plata', name: 'Diccionario andante', desc: 'Adivina 25 Cosi-dles.', reward: { escudo: 1 }, progress: (s, c) => [wins(c, 'cosidle'), 25] },
   // ---- Ajedrez ----
-  { id: 'mate-1', icon: '♞', tier: 'oro', name: 'Calculador', desc: 'Resuelve un mate en 6.', reward: { letra: 1 }, progress: (s, c) => [wins(c, 'ajedrez'), 1] },
-  { id: 'mate-5', icon: '♛', tier: 'netherite', name: 'Gran maestro', desc: 'Resuelve 5 mates en 6.', reward: { tickets: 3 }, progress: (s, c) => [wins(c, 'ajedrez'), 5] },
+  { id: 'mate-1', icon: '♞', tier: 'oro', name: 'Calculador', desc: 'Resuelve 5 mates en 6.', reward: { letra: 1 }, progress: (s, c) => [wins(c, 'ajedrez'), 5] },
+  { id: 'mate-5', icon: '♛', tier: 'netherite', name: 'Gran maestro', desc: 'Resuelve 15 mates en 6.', reward: { tickets: 3 }, progress: (s, c) => [wins(c, 'ajedrez'), 15] },
   // ---- Varias ----
-  { id: 'cupones-3', icon: '🎟️', tier: 'plata', name: 'Coleccionista', desc: 'Compra 3 cupones en la tienda.', reward: { fiebre: 1 }, progress: (s, c, g) => [g.owned, 3] },
-  { id: 'castigos-3', icon: '🛡️', tier: 'bronce', name: 'Sobreviviente', desc: 'Sobrevive a 3 castigos. Algo es algo.', reward: { escudo: 1 }, progress: (s, c) => [c.punished, 3] },
+  { id: 'cupones-3', icon: '🎟️', tier: 'plata', name: 'Coleccionista', desc: 'Compra 5 cupones en la tienda.', reward: { fiebre: 1 }, progress: (s, c, g) => [g.owned, 5] },
+  { id: 'castigos-3', icon: '🛡️', tier: 'bronce', name: 'Sobreviviente', desc: 'Sobrevive a 5 castigos. Algo es algo.', reward: { escudo: 1 }, progress: (s, c) => [c.punished, 5] },
   { id: 'clave', icon: '🔑', tier: 'netherite', name: 'Clave completa', desc: 'Descubre todas las letras de la clave secreta.', reward: { tickets: 2 }, progress: (s, c, g) => [Math.min(c.letters, g.clave.length), g.clave.length || 1] },
 ];
 
@@ -65,7 +65,7 @@ const PUNISHMENTS = {
 };
 
 const DEFAULT_CONFIG = {
-  claveSecreta: 'TE AMO',
+  claveSecreta: 'MINION',
   premioClave: 'Un premio sorpresa de tu novia.',
   fiebreMinutos: 15,
   castigos: { manzana: { cuando: 3, costo: 1 }, creeper: { cuando: 3, costo: 1 }, sindarov: { cuando: 2, costo: 2 }, zombi: { cuando: 3, costo: 1 } },
@@ -242,8 +242,8 @@ export async function initLogros({ store, toast, audio, getBreakId, getSopaIds }
 
     onPomodoro() {
       const h = new Date().getHours();
-      if (h >= 23) data.night = 1;
-      if (h < 8 && h >= 4) data.early = 1;
+      if (h >= 21) data.night = (data.night || 0) + 1;
+      if (h < 8 && h >= 4) data.early = (data.early || 0) + 1;
       data.lastStudy = todayKey();
       save();
       bonus(1);
@@ -255,7 +255,7 @@ export async function initLogros({ store, toast, audio, getBreakId, getSopaIds }
       if (won) {
         data.wins[key] = (data.wins[key] || 0) + 1;
         if (key === 'criptico' && !detail.hints) data.cripticoSolo += 1;
-        if (key === 'cosidle' && detail.tries <= 2) data.cosidleFast = 1;
+        if (key === 'cosidle' && detail.tries <= 2) data.cosidleFast = (data.cosidleFast || 0) + 1;
         if (key === 'ajedrez') data.chessLossStreak = 0;
         save();
         checkAll();
