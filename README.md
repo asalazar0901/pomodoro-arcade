@@ -12,7 +12,8 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
 - **Temarios de examen**: materias que se abren como carpetas, cada una con su checklist de temas. Se pueden agregar y quitar materias y temas, marcar lo ya estudiado y elegir con 🎯 qué tema se estudia en el Pomodoro. Cada bloque terminado se anota en ese tema.
 - **Minijuegos solo en el descanso** (máximo 2 tickets de minijuegos por descanso, ajustable):
   - Salva el malvavisco: ahorcado por temas (Star Wars, historia del ajedrez, cultura general, ciencia, nuestras canciones), con fondo distinto para cada tema. Un villano camina hacia el malvavisco con cada fallo. 4 fallos y la pista se abre hasta el segundo.
-  - Críptico: criptograma de 52 frases célebres (cada letra es un número). 2 letras de pista y 3 comprobaciones fallidas antes de perder.
+  - Críptico: 51 pistas de crucigrama críptico en español (anagramas, palabras escondidas, al revés, sumas, dobles definiciones...). 3 intentos y hasta 3 ayudas: tipo de juego, definición y primera letra.
+  - Frase cifrada (oculta por ahora): criptograma de 52 frases célebres. Se muestra quitando 'frase' de `ajustes.ocultar` en `juegos.js`.
   - Cosi-dle: adivinar una palabra de 5 letras en 4 intentos, en modo difícil (hay que reusar las letras descubiertas).
   - Examen sorpresa: 7 preguntas de 8 segundos, se aprueba con 6. Las opciones salen revueltas.
   - Reto de ajedrez: 15 mates en 6 contra reloj (10 min, 2 intentos). El rival contesta solo con la defensa que más aguanta. Posiciones verificadas por computadora.

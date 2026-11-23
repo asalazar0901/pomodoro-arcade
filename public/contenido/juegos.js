@@ -21,9 +21,13 @@ export const JUEGOS = {
      AJUSTES GENERALES
        ticketsMaxPorDescanso -> cuántos tickets se pueden ganar con
                                 minijuegos en un mismo descanso
+       ocultar               -> juegos que no aparecen en el menú. Opciones:
+                                'frase', 'criptico', 'ahorcado', 'cosidle',
+                                'ajedrez', 'arcade'. Lista vacía [] = todos
      ------------------------------------------------------------------- */
   ajustes: {
     ticketsMaxPorDescanso: 2,
+    ocultar: ['frase'],
   },
 
   /* -------------------------------------------------------------------
@@ -38,7 +42,9 @@ export const JUEGOS = {
        sopaOcultarPalabras     -> true: solo ve la inicial y cuántas letras lleva
        sopaSenuelos            -> true: cuadrícula más grande y palabras falsas parecidas
        sopaSegundos            -> tiempo para encontrar todo (0 = sin reloj)
-       criptoPistas            -> letras que ya vienen resueltas en el críptico
+       criptoPistas            -> letras que ya vienen resueltas en la frase cifrada
+       cripticoPistas          -> ayudas del críptico (0 a 3): tipo, definición y primera letra
+       cripticoIntentos        -> respuestas equivocadas permitidas en el críptico
        criptoErrores           -> veces que puede llenar todo mal antes de perder
      ------------------------------------------------------------------- */
   dificultad: {
@@ -53,6 +59,8 @@ export const JUEGOS = {
     sopaSegundos: 240,
     criptoPistas: 2,
     criptoErrores: 3,
+    cripticoPistas: 3,
+    cripticoIntentos: 3,
   },
 
   /* -------------------------------------------------------------------
@@ -158,7 +166,74 @@ export const JUEGOS = {
   ],
 
   /* -------------------------------------------------------------------
-     1b. CRÍPTICO (criptograma)
+     1c. CRÍPTICO (pistas de crucigrama críptico)
+     Cada pista tiene una DEFINICIÓN (lo que significa la respuesta) y un
+     JUEGO DE PALABRAS que lleva a la misma respuesta. El número de letras
+     sale solo entre paréntesis.
+       pista       -> la frase que ve él
+       respuesta   -> la palabra (puede llevar espacios, tildes y Ñ)
+       tipo        -> 'anagrama', 'escondida', 'al revés', 'suma',
+                      'doble definición', 'contenedor', 'resta',
+                      'iniciales' o 'suena como'
+       definicion  -> qué parte de la pista es la definición (es una pista)
+       explicacion -> cómo se resuelve; sale al final
+     ------------------------------------------------------------------- */
+  criptico: [
+    { pista: 'Religiosa con jamón revuelto', respuesta: 'monja', tipo: 'anagrama', definicion: 'Religiosa', explicacion: 'JAMÓN revuelto = MONJA.' },
+    { pista: 'Delia, loca, es perfecta', respuesta: 'ideal', tipo: 'anagrama', definicion: 'es perfecta', explicacion: 'DELIA loca = IDEAL.' },
+    { pista: 'Saco roto me da repugnancia', respuesta: 'asco', tipo: 'anagrama', definicion: 'repugnancia', explicacion: 'SACO roto = ASCO.' },
+    { pista: 'Mora deshecha: un puñado de flores', respuesta: 'ramo', tipo: 'anagrama', definicion: 'un puñado de flores', explicacion: 'MORA deshecha = RAMO.' },
+    { pista: 'Ernesto revuelto: cantantes de ópera', respuesta: 'tenores', tipo: 'anagrama', definicion: 'cantantes de ópera', explicacion: 'ERNESTO revuelto = TENORES.' },
+    { pista: 'Alegría mal llevada provoca estornudos', respuesta: 'alergia', tipo: 'anagrama', definicion: 'provoca estornudos', explicacion: 'ALEGRÍA mal = ALERGIA.' },
+    { pista: 'Pasta revuelta para picar en el bar', respuesta: 'tapas', tipo: 'anagrama', definicion: 'para picar en el bar', explicacion: 'PASTA revuelta = TAPAS.' },
+    { pista: 'Óscar mezclado: pan de Reyes', respuesta: 'rosca', tipo: 'anagrama', definicion: 'pan de Reyes', explicacion: 'ÓSCAR mezclado = ROSCA.' },
+    { pista: 'Lámina rota es una bestia', respuesta: 'animal', tipo: 'anagrama', definicion: 'una bestia', explicacion: 'LÁMINA rota = ANIMAL.' },
+    { pista: 'Japonés revuelto absorbe el agua del baño', respuesta: 'esponja', tipo: 'anagrama', definicion: 'absorbe el agua del baño', explicacion: 'JAPONÉS revuelto = ESPONJA.' },
+    { pista: 'Metal que guarda el tesoro', respuesta: 'oro', tipo: 'escondida', definicion: 'Metal', explicacion: 'tes-ORO: está escondido dentro de "tesoro".' },
+    { pista: 'Tejido escondido en este lazo', respuesta: 'tela', tipo: 'escondida', definicion: 'Tejido', explicacion: 'es-TE LA-zo.' },
+    { pista: 'Agua salada dentro del camarón', respuesta: 'mar', tipo: 'escondida', definicion: 'Agua salada', explicacion: 'ca-MAR-ón.' },
+    { pista: 'Alimento que esconde la campana', respuesta: 'pan', tipo: 'escondida', definicion: 'Alimento', explicacion: 'cam-PAN-a.' },
+    { pista: 'Flor escondida en el caro sabor', respuesta: 'rosa', tipo: 'escondida', definicion: 'Flor', explicacion: 'ca-RO SA-bor.' },
+    { pista: 'Querer escondido en la cama roja', respuesta: 'amar', tipo: 'escondida', definicion: 'Querer', explicacion: 'c-AMA R-oja.' },
+    { pista: 'Muestra de cariño escondida en árabe sobrio', respuesta: 'beso', tipo: 'escondida', definicion: 'Muestra de cariño', explicacion: 'ára-BE SO-brio.' },
+    { pista: 'Roma al revés es lo que siento por ti', respuesta: 'amor', tipo: 'al revés', definicion: 'lo que siento por ti', explicacion: 'ROMA al revés = AMOR.' },
+    { pista: 'Las regresan como condimento', respuesta: 'sal', tipo: 'al revés', definicion: 'condimento', explicacion: 'LAS al revés = SAL.' },
+    { pista: 'Atar al revés: roedor', respuesta: 'rata', tipo: 'al revés', definicion: 'roedor', explicacion: 'ATAR al revés = RATA.' },
+    { pista: 'Zorra de vuelta en la paella', respuesta: 'arroz', tipo: 'al revés', definicion: 'en la paella', explicacion: 'ZORRA al revés = ARROZ.' },
+    { pista: 'Adán regresa sin cosa alguna', respuesta: 'nada', tipo: 'al revés', definicion: 'sin cosa alguna', explicacion: 'ADÁN al revés = NADA.' },
+    { pista: 'Noel al revés: rey de la selva', respuesta: 'leon', tipo: 'al revés', definicion: 'rey de la selva', explicacion: 'NOEL al revés = LEÓN.' },
+    { pista: 'Ocas de vuelta: prenda de vestir', respuesta: 'saco', tipo: 'al revés', definicion: 'prenda de vestir', explicacion: 'OCAS al revés = SACO.' },
+    { pista: 'Estrella y cubo de juego forman al militar', respuesta: 'soldado', tipo: 'suma', definicion: 'al militar', explicacion: 'SOL (estrella) + DADO (cubo de juego) = SOLDADO.' },
+    { pista: 'Tour y astro rey: flor amarilla', respuesta: 'girasol', tipo: 'suma', definicion: 'flor amarilla', explicacion: 'GIRA (tour) + SOL (astro rey) = GIRASOL.' },
+    { pista: 'Mari posa: insecto con alas de colores', respuesta: 'mariposa', tipo: 'suma', definicion: 'insecto con alas de colores', explicacion: 'MARI + POSA = MARIPOSA.' },
+    { pista: 'Extrae extremos con este útil escolar', respuesta: 'sacapuntas', tipo: 'suma', definicion: 'útil escolar', explicacion: 'SACA (extrae) + PUNTAS (extremos) = SACAPUNTAS.' },
+    { pista: 'Rostro y verdura: lleva su casa a cuestas', respuesta: 'caracol', tipo: 'suma', definicion: 'lleva su casa a cuestas', explicacion: 'CARA (rostro) + COL (verdura) = CARACOL.' },
+    { pista: 'Uva seca más época: entretenimiento', respuesta: 'pasatiempo', tipo: 'suma', definicion: 'entretenimiento', explicacion: 'PASA (uva seca) + TIEMPO (época) = PASATIEMPO.' },
+    { pista: 'Roca fundida y vajilla en la cocina', respuesta: 'lavaplatos', tipo: 'suma', definicion: 'en la cocina', explicacion: 'LAVA (roca fundida) + PLATOS (vajilla) = LAVAPLATOS.' },
+    { pista: 'Rescata existencias en la alberca', respuesta: 'salvavidas', tipo: 'suma', definicion: 'en la alberca', explicacion: 'SALVA (rescata) + VIDAS (existencias) = SALVAVIDAS.' },
+    { pista: 'Interpreta álbumes en este aparato', respuesta: 'tocadiscos', tipo: 'suma', definicion: 'aparato', explicacion: 'TOCA (interpreta) + DISCOS (álbumes) = TOCADISCOS.' },
+    { pista: 'Asiento del parque y lugar del dinero', respuesta: 'banco', tipo: 'doble definición', definicion: 'Asiento del parque / lugar del dinero', explicacion: 'Un banco del parque y un banco con dinero.' },
+    { pista: 'Felino que levanta coches', respuesta: 'gato', tipo: 'doble definición', definicion: 'Felino / que levanta coches', explicacion: 'Gato (animal) y gato hidráulico.' },
+    { pista: 'Pieza de ajedrez y edificio alto', respuesta: 'torre', tipo: 'doble definición', definicion: 'Pieza de ajedrez / edificio alto', explicacion: 'La torre del tablero y una torre de oficinas.' },
+    { pista: 'Menú del restaurante o mensaje de amor', respuesta: 'carta', tipo: 'doble definición', definicion: 'Menú / mensaje de amor', explicacion: 'La carta del restaurante y una carta de amor.' },
+    { pista: 'Juguete y articulación', respuesta: 'muñeca', tipo: 'doble definición', definicion: 'Juguete / articulación', explicacion: 'Una muñeca de juguete y la muñeca de la mano.' },
+    { pista: 'Piso de un edificio y ser vivo con hojas', respuesta: 'planta', tipo: 'doble definición', definicion: 'Piso / ser vivo con hojas', explicacion: 'Planta baja y una planta del jardín.' },
+    { pista: 'Trofeo y parte alta del árbol', respuesta: 'copa', tipo: 'doble definición', definicion: 'Trofeo / parte alta del árbol', explicacion: 'La copa del campeonato y la copa del árbol.' },
+    { pista: 'Fuego y animal de los Andes', respuesta: 'llama', tipo: 'doble definición', definicion: 'Fuego / animal de los Andes', explicacion: 'Una llama de fuego y la llama andina.' },
+    { pista: 'Cano abraza lo mío: senda', respuesta: 'camino', tipo: 'contenedor', definicion: 'senda', explicacion: 'CANO con MI adentro: CA-MI-NO.' },
+    { pista: 'Pero contiene una erre: el mejor amigo', respuesta: 'perro', tipo: 'contenedor', definicion: 'el mejor amigo', explicacion: 'PERO con una R adentro: PER-R-O.' },
+    { pista: 'Bala sin cabeza sirve para volar', respuesta: 'ala', tipo: 'resta', definicion: 'sirve para volar', explicacion: 'BALA sin la primera letra = ALA.' },
+    { pista: 'Rosa sin cabeza: la hembra del oso', respuesta: 'osa', tipo: 'resta', definicion: 'la hembra del oso', explicacion: 'ROSA sin la primera letra = OSA.' },
+    { pista: 'Marco sin cabeza: lo usa el arquero', respuesta: 'arco', tipo: 'resta', definicion: 'lo usa el arquero', explicacion: 'MARCO sin la primera letra = ARCO.' },
+    { pista: 'Cabezas de Sueños, Oro y Lunas: la estrella', respuesta: 'sol', tipo: 'iniciales', definicion: 'la estrella', explicacion: 'Sueños, Oro, Lunas = SOL.' },
+    { pista: 'Al principio, Mi Abuela Tenía Esperanzas: victoria en el tablero', respuesta: 'mate', tipo: 'iniciales', definicion: 'victoria en el tablero', explicacion: 'Mi, Abuela, Tenía, Esperanzas = MATE.' },
+    { pista: 'Saludo que suena como el mar', respuesta: 'hola', tipo: 'suena como', definicion: 'Saludo', explicacion: 'HOLA se oye igual que OLA.' },
+    { pista: 'Se oye como el pelo del brazo: hermoso', respuesta: 'bello', tipo: 'suena como', definicion: 'hermoso', explicacion: 'BELLO suena igual que VELLO.' },
+    { pista: 'Suena a tubería: poseyó', respuesta: 'tuvo', tipo: 'suena como', definicion: 'poseyó', explicacion: 'TUVO suena igual que TUBO.' },
+  ],
+
+  /* -------------------------------------------------------------------
+     1b. FRASE CIFRADA (criptograma). Está oculta: ver «ocultar» en AJUSTES.
      Cada frase se cifra: cada letra se cambia por un número. Al descifrarla
      sale el autor. Las pistas y las comprobaciones se cambian en DIFICULTAD.
        frase -> la frase (con tildes y comas, como quieras)

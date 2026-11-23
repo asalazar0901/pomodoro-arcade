@@ -536,7 +536,27 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
 .hm-stage.fondo-musica .hm-track { border-bottom-color: #f2b8ff; background: none; }
 .hm-stage .hm-letter { background: #fffaf0; }
 
-/* ---- Críptico ---- */
+/* ---- Críptico (pistas crípticas) ---- */
+.cc-card { background: var(--navy); color: #f3f6ff; border: 3px solid var(--ink); padding: 14px 12px 10px; margin-bottom: 12px; text-align: center; }
+.cc-clue { font-size: 24px; line-height: 1.25; margin: 0; }
+.cc-len { color: var(--warn); white-space: nowrap; }
+.cc-author { font-size: 15px; opacity: .7; margin: 8px 0 0; }
+.cc-boxes { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 14px; margin: 6px 0 8px; }
+.cc-word { display: inline-flex; gap: 4px; }
+.cc-box {
+  width: 30px; height: 36px; line-height: 34px; text-align: center; font-size: 24px; color: var(--navy);
+  background: #fffaf0; border: 3px solid var(--ink); text-transform: uppercase;
+}
+.cc-box.is-next { border-color: var(--blue); }
+.cc-box.is-hinted { color: var(--ok); }
+.cc-box.is-done { background: var(--latte); }
+.cc-hints ul { margin: 0 0 8px; padding-left: 20px; font-size: 18px; color: var(--coffee-dark); }
+.cc-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 10px; }
+.cc-help { font-size: 17px; color: var(--coffee-dark); width: 100%; }
+.cc-help summary { cursor: pointer; text-align: center; color: var(--blue); }
+.cc-help ul { padding-left: 18px; margin: 6px 0; }
+
+/* ---- Frase cifrada ---- */
 .cr-phrase { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin: 8px 0 10px; }
 .cr-word { display: inline-flex; gap: 3px; white-space: nowrap; }
 .cr-cell {

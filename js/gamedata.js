@@ -6,6 +6,7 @@
 
 const FALLBACK = {
   ahorcado: [{ tema: 'Variado', fondo: 'cafe', palabras: [{ palabra: 'brownie', pista: 'Un postre de la tienda' }] }],
+  criptico: [{ pista: 'Roma al revés es lo que siento por ti', respuesta: 'amor', tipo: 'al revés', definicion: 'lo que siento por ti', explicacion: 'ROMA al revés = AMOR.' }],
   cripto: [{ frase: 'Cuando veas una buena jugada, busca una mejor.', autor: 'Emanuel Lasker' }],
   cosidle: ['grogu', 'besos', 'pasta'],
   trivia: {
@@ -68,6 +69,8 @@ function cleanDifficulty(d = {}) {
     sopaSegundos: num(d.sopaSegundos, 30, 1800, 240, true),
     criptoPistas: num(d.criptoPistas, 0, 10, 2, true),
     criptoErrores: num(d.criptoErrores, 1, 10, 3),
+    cripticoPistas: num(d.cripticoPistas, 0, 3, 3, true),
+    cripticoIntentos: num(d.cripticoIntentos, 1, 10, 3),
   };
   dif.ahorcadoPistaTrasFallos = Math.min(dif.ahorcadoPistaTrasFallos, dif.ahorcadoFallos - 1);
   return dif;
@@ -77,7 +80,10 @@ function clean(raw) {
   const data = {};
 
   const max = Math.floor(Number(raw.ajustes?.ticketsMaxPorDescanso));
-  data.ajustes = { ticketsMaxPorDescanso: Number.isFinite(max) ? Math.max(1, Math.min(max, 10)) : 2 };
+  data.ajustes = {
+    ticketsMaxPorDescanso: Number.isFinite(max) ? Math.max(1, Math.min(max, 10)) : 2,
+    ocultar: Array.isArray(raw.ajustes?.ocultar) ? raw.ajustes.ocultar.map((k) => String(k).trim()) : [],
+  };
   data.dificultad = cleanDifficulty(raw.dificultad);
 
   // Ahorcado por temas: [{ tema, fondo, palabras: [{ palabra, pista }] }]
@@ -88,6 +94,16 @@ function clean(raw) {
     const fondo = FONDOS.includes(x?.fondo) ? x.fondo : 'cafe';
     return list.map((w) => ({ palabra: normalizeWord(w?.palabra, true), pista: String(w?.pista || ''), tema, fondo }));
   }).filter((x) => x.palabra.replace(/ /g, '').length >= 3);
+
+  data.criptico = (raw.criptico || [])
+    .map((x) => ({
+      pista: String(x?.pista || '').trim(),
+      respuesta: normalizeWord(x?.respuesta, true),
+      tipo: String(x?.tipo || '').trim().toLowerCase(),
+      definicion: String(x?.definicion || ''),
+      explicacion: String(x?.explicacion || ''),
+    }))
+    .filter((x) => x.pista && x.respuesta.replace(/ /g, '').length >= 2);
 
   data.cripto = (raw.cripto || [])
     .map((x) => ({ frase: String(x?.frase || '').replace(/\s+/g, ' ').trim(), autor: String(x?.autor || '') }))
@@ -125,7 +141,7 @@ function clean(raw) {
 
   // Lo que quede vacío se rellena con lo de fábrica
   const usedFallback = [];
-  for (const key of ['ahorcado', 'cripto', 'cosidle', 'ajedrez', 'sopa']) {
+  for (const key of ['ahorcado', 'criptico', 'cripto', 'cosidle', 'ajedrez', 'sopa']) {
     if (!isList(data[key])) { data[key] = clean0(key); usedFallback.push(key); }
   }
   if (!isList(data.trivia.preguntas)) {
@@ -143,6 +159,7 @@ function clean0(key) {
     fallbackClean = {
       ahorcado: FALLBACK.ahorcado[0].palabras.map((x) => ({ palabra: normalizeWord(x.palabra, true), pista: x.pista, tema: 'Variado', fondo: 'cafe' })),
       cripto: FALLBACK.cripto,
+      criptico: FALLBACK.criptico.map((x) => ({ ...x, respuesta: normalizeWord(x.respuesta, true) })),
       cosidle: FALLBACK.cosidle.map((w) => normalizeWord(w)),
       trivia: FALLBACK.trivia,
       ajedrez: FALLBACK.ajedrez.map((p) => ({ ...p, solucion: parseSolution(p.solucion) })),

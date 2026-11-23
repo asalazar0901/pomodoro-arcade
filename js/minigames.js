@@ -200,7 +200,7 @@ export class Hangman extends MiniGame {
 }
 
 /* =====================================================================
-   1b. CRÍPTICO: criptograma. Una frase célebre donde cada letra se
+   1b. FRASE CIFRADA: criptograma. Una frase célebre donde cada letra se
    cambió por un número. Misma letra = mismo número.
    ===================================================================== */
 const CRYPTO_KEY = 'pomodoroArcade.cripto';
@@ -364,6 +364,167 @@ export class Cryptogram extends MiniGame {
     this.root.querySelectorAll('.kb-key').forEach((btn) => btn.classList.toggle('is-used', used.has(btn.dataset.key)));
     const left = this.maxErrors - this.errors;
     this.$('.mg-status').textContent = `Comprobaciones fallidas que quedan: ${'●'.repeat(Math.max(0, left))}${'○'.repeat(Math.max(0, this.errors))}`;
+  }
+}
+
+/* =====================================================================
+   1c. CRÍPTICO: una pista de crucigrama críptico. Cada pista tiene una
+   definición (lo que significa la respuesta) y un juego de palabras
+   (anagrama, palabra escondida, al revés...). Entre paréntesis, las letras.
+   ===================================================================== */
+const CRYPTIC_KEY = 'pomodoroArcade.criptico';
+export const CRYPTIC_TYPES = {
+  'anagrama': 'Las letras de una palabra de la pista, revueltas. Avisos: revuelto, loco, roto, mal, mezclado.',
+  'escondida': 'La respuesta está escondida, seguida, dentro de las palabras de la pista. Avisos: en, esconde, guarda, dentro de.',
+  'al revés': 'Una palabra de la pista leída de derecha a izquierda. Avisos: al revés, regresa, de vuelta.',
+  'suma': 'Dos piezas que se pegan una tras otra para formar la respuesta.',
+  'doble definición': 'Dos significados distintos de la misma palabra, sin juego de letras.',
+  'contenedor': 'Una pieza metida dentro de otra. Avisos: abraza, contiene, rodea.',
+  'resta': 'A una palabra le quitas letras. Avisos: sin cabeza, sin fin, casi.',
+  'iniciales': 'Las primeras letras de varias palabras. Avisos: cabezas de, al principio, primeras de.',
+  'suena como': 'La respuesta se oye igual que otra palabra. Avisos: suena, se oye.',
+};
+
+export class CrypticClue extends MiniGame {
+  get canRestart() { return this.over; }
+  get maxTries() { return this.dif.cripticoIntentos || 3; }
+  get maxHints() { return this.dif.cripticoPistas ?? 3; }
+
+  #load() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CRYPTIC_KEY) || 'null');
+      const entry = saved && this.data.find((x) => x.pista === saved.pista);
+      return entry ? { entry, ...saved } : null;
+    } catch { return null; }
+  }
+  #save() {
+    try {
+      if (this.over) localStorage.removeItem(CRYPTIC_KEY);
+      else localStorage.setItem(CRYPTIC_KEY, JSON.stringify({ pista: this.entry.pista, tries: this.tries, hints: this.hints, typed: this.typed }));
+    } catch { /* sin almacenamiento */ }
+  }
+
+  start() {
+    if (this.entry && !this.over) return;
+    const saved = this.#load();
+    this.over = false;
+    this.entry = saved ? saved.entry : pickNew(this.data, this.entry);
+    this.answer = this.entry.respuesta;               // MAYÚSCULAS, sin tildes, con espacios
+    this.letters = this.answer.replace(/ /g, '');
+    this.tries = saved ? saved.tries : 0;
+    this.hints = saved ? saved.hints : 0;
+    this.typed = saved ? saved.typed || '' : '';
+    const pattern = this.answer.split(' ').map((w) => w.length).join(',');
+    this.root.innerHTML = `
+      <div class="cc-card">
+        <p class="cc-clue">${escapeHtml(this.entry.pista)} <span class="cc-len">(${pattern})</span></p>
+        <p class="cc-author">Pista críptica · hecha para ti</p>
+      </div>
+      <div class="cc-boxes" aria-label="Respuesta">${this.answer.split(' ').map((w) =>
+        `<span class="cc-word">${[...w].map(() => '<span class="cc-box"></span>').join('')}</span>`).join('')}</div>
+      <p class="mg-status" aria-live="polite"></p>
+      <div class="cc-hints" aria-live="polite"></div>
+      <div class="cc-actions">
+        <button type="button" class="btn btn-ghost btn-small cc-hint-btn">💡 Pista</button>
+        <details class="cc-help"><summary>¿Cómo se juega?</summary>
+          <p>Cada pista tiene dos partes: una <strong>definición</strong> (casi siempre al principio o al final) y un <strong>juego de palabras</strong> que lleva a la misma respuesta. Entre paréntesis va el número de letras.</p>
+          <ul>${Object.entries(CRYPTIC_TYPES).map(([k, v]) => `<li><strong>${k}:</strong> ${v}</li>`).join('')}</ul>
+          <p>Ejemplo: «Roma al revés es lo que siento por ti (4)». Definición: lo que siento por ti. Juego: ROMA al revés = AMOR.</p>
+        </details>
+      </div>
+      ${keyboardHtml([LETTER_ROWS[0], LETTER_ROWS[1], ['ENVIAR', ...LETTER_ROWS[2], 'BORRAR']])}
+      <p class="game-msg" aria-live="polite"></p>`;
+    this.root.querySelector('.kb').addEventListener('click', (e) => {
+      const key = e.target.closest('[data-key]');
+      if (key) this.press(key.dataset.key);
+    });
+    this.$('.cc-hint-btn').addEventListener('click', () => this.hint());
+    this.#paint();
+    this.#save();
+  }
+
+  onKey(key) {
+    if (key === 'Enter') { this.press('ENVIAR'); return true; }
+    if (key === 'Backspace') { this.press('BORRAR'); return true; }
+    const letter = normalizeWord(key);
+    if (letter.length === 1) { this.press(letter); return true; }
+    return false;
+  }
+
+  press(key) {
+    if (this.over) return;
+    const msg = this.$('.game-msg');
+    msg.textContent = '';
+    msg.classList.remove('is-error');
+    if (key === 'BORRAR') this.typed = this.typed.slice(0, -1);
+    else if (key === 'ENVIAR') { this.#submit(); return; }
+    else if (this.typed.length < this.letters.length) this.typed += key;
+    this.#paint();
+    this.#save();
+  }
+
+  hint() {
+    if (this.over || this.hints >= Math.min(this.maxHints, 3)) return;
+    this.hints += 1;
+    this.sfx('word');
+    this.#paint();
+    this.#save();
+  }
+
+  #submit() {
+    const msg = this.$('.game-msg');
+    if (this.typed.length < this.letters.length) {
+      msg.textContent = `Faltan letras: son ${this.letters.length}.`;
+      msg.classList.add('is-error');
+      return;
+    }
+    if (this.typed === this.letters) {
+      this.over = true;
+      this.#paint();
+      msg.innerHTML = `¡Correcto! Era <strong>${escapeHtml(this.answer)}</strong>. ${escapeHtml(this.entry.explicacion || '')}`;
+      this.win();
+      this.#save();
+      return;
+    }
+    this.tries += 1;
+    this.sfx('hit');
+    if (this.tries >= this.maxTries) {
+      this.over = true;
+      this.typed = this.letters;
+      this.#paint();
+      msg.innerHTML = `Sin intentos. Era <strong>${escapeHtml(this.answer)}</strong>. ${escapeHtml(this.entry.explicacion || '')}`;
+      msg.classList.add('is-error');
+      this.lose();
+      this.#save();
+      return;
+    }
+    this.typed = '';
+    this.#paint();
+    this.#save();
+    msg.textContent = 'No es esa. Busca la definición y el juego de palabras.';
+    msg.classList.add('is-error');
+  }
+
+  #paint() {
+    const boxes = this.root.querySelectorAll('.cc-box');
+    boxes.forEach((box, i) => {
+      box.textContent = this.typed[i] || (this.hints >= 3 && i === 0 ? this.letters[0] : '');
+      box.classList.toggle('is-hinted', !this.typed[i] && this.hints >= 3 && i === 0);
+      box.classList.toggle('is-next', !this.over && i === this.typed.length);
+      box.classList.toggle('is-done', this.over);
+    });
+    const tipo = this.entry.tipo;
+    const lines = [];
+    if (this.hints >= 1) lines.push(`<li><strong>Tipo:</strong> ${escapeHtml(tipo)}${CRYPTIC_TYPES[tipo] ? ` — ${escapeHtml(CRYPTIC_TYPES[tipo])}` : ''}</li>`);
+    if (this.hints >= 2) lines.push(`<li><strong>Definición:</strong> «${escapeHtml(this.entry.definicion)}»</li>`);
+    if (this.hints >= 3) lines.push('<li><strong>Primera letra:</strong> ya está en la primera casilla.</li>');
+    this.$('.cc-hints').innerHTML = lines.length ? `<ul>${lines.join('')}</ul>` : '';
+    const btn = this.$('.cc-hint-btn');
+    const allowed = Math.min(this.maxHints, 3);
+    btn.disabled = this.over || this.hints >= allowed;
+    btn.textContent = allowed ? `💡 Pista (${allowed - this.hints} de ${allowed})` : '💡 Sin pistas';
+    const left = this.maxTries - this.tries;
+    this.$('.mg-status').textContent = `Intentos: ${'●'.repeat(Math.max(0, left))}${'○'.repeat(Math.max(0, this.tries))}`;
   }
 }
 
