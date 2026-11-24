@@ -17,7 +17,7 @@ Temporizador Pomodoro gamificado con minijuegos y cupones canjeables. Hecho en H
   - Cosi-dle: adivinar una palabra de 5 letras en 4 intentos, en modo difícil (hay que reusar las letras descubiertas).
   - Examen sorpresa: 7 preguntas de 8 segundos, se aprueba con 6. Las opciones salen revueltas.
   - Reto de ajedrez: 15 mates en 6 contra reloj (10 min, 2 intentos). El rival contesta solo con la defensa que más aguanta. Posiciones verificadas por computadora.
-  - Sopa de letras: 20 mapas en 7 temas (Minecraft, ajedrez, tu novia, Star Wars, películas románticas, fútbol y crossover), con palabras señuelo y 1:30 min para resolverla. Completarla da +1 🎟️.
+  - Sopa de letras: 20 mapas en 7 temas (Minecraft, ajedrez, tu novia, Star Wars, películas románticas, fútbol y crossover), con palabras señuelo y 3:30 min para resolverla. Completarla da +1 🎟️.
   - Arcade de supervivencia en Canvas. Llegar a 300 puntos da +1 🎟️.
   - Máximo 1 ticket por juego en cada descanso.
 - **Modo Universidad / Ajedrez**: un interruptor arriba del reloj cambia colores, fondo y frases. En modo Ajedrez los temarios se cambian por: 🏆 pequeñas victorias del día, 🏁 próximos torneos con cuenta regresiva (también salen en la Agenda), 📈 bitácora de ELO por ritmo con gráfica y 🎯 metas a corto, mediano y largo plazo. Vive en `js/chess.js`.

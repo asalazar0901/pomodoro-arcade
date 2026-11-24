@@ -56,7 +56,7 @@ export const JUEGOS = {
     ajedrezSegundos: 600,
     sopaOcultarPalabras: false,
     sopaSenuelos: true,
-    sopaSegundos: 90,
+    sopaSegundos: 210,
     criptoPistas: 2,
     criptoErrores: 3,
     cripticoPistas: 3,
